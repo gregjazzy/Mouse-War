@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Mouse - Adventure</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Écran de connexion/inscription -->
+    <div id="loginScreen" class="screen active">
+        <div class="logo-container">
+            <h1 class="game-logo">
+                <span class="logo-cheese">🧀</span>
+                MAZE MOUSE
+                <span class="logo-mouse">🐭</span>
+            </h1>
+            <p class="game-subtitle" data-translate="subtitle">Une aventure dans le labyrinthe</p>
+        </div>
+        
+        <div class="auth-container">
+            <!-- Formulaire de connexion -->
+            <div id="loginForm" class="auth-form active">
+                <h2 class="form-title">🔐 CONNEXION</h2>
+                <div class="form-group">
+                    <label for="loginUsername">Nom d'utilisateur</label>
+                    <input type="text" id="loginUsername" class="form-input" placeholder="Entrez votre nom" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Entrez votre mot de passe" autocomplete="current-password">
+                </div>
+                <div id="loginError" class="error-message"></div>
+                <button class="btn btn-primary" onclick="loginUser()">
+                    <span class="btn-icon">🔓</span>
+                    SE CONNECTER
+                </button>
+                <p class="switch-form">
+                    Pas encore de compte ? <a href="#" onclick="showRegisterForm(); return false;">Créer un compte</a>
+                </p>
+            </div>
+            
+            <!-- Formulaire d'inscription -->
+            <div id="registerForm" class="auth-form">
+                <h2 class="form-title">📝 CRÉER UN COMPTE</h2>
+                <div class="form-group">
+                    <label for="registerUsername">Nom d'utilisateur</label>
+                    <input type="text" id="registerUsername" class="form-input" placeholder="Choisissez un nom unique" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Mot de passe</label>
+                    <input type="password" id="registerPassword" class="form-input" placeholder="Choisissez un mot de passe" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="registerPasswordConfirm">Confirmer le mot de passe</label>
+                    <input type="password" id="registerPasswordConfirm" class="form-input" placeholder="Confirmez votre mot de passe" autocomplete="new-password">
+                </div>
+                <div id="registerError" class="error-message"></div>
+                <button class="btn btn-primary" onclick="registerUser()">
+                    <span class="btn-icon">✨</span>
+                    CRÉER MON COMPTE
+                </button>
+                <p class="switch-form">
+                    Déjà un compte ? <a href="#" onclick="showLoginForm(); return false;">Se connecter</a>
+                </p>
+            </div>
+        </div>
+        
+        <div class="decorative-elements">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+    </div>
+
+    <!-- Écran de démarrage -->
+    <div id="startScreen" class="screen">
+        <div class="logo-container">
+            <h1 class="game-logo">
+                <span class="logo-cheese">🧀</span>
+                MAZE MOUSE
+                <span class="logo-mouse">🐭</span>
+            </h1>
+            <p class="game-subtitle" data-translate="subtitle">Une aventure dans le labyrinthe</p>
+            <p class="game-creator" data-translate="creator">Créé par CinderYaxley</p>
+        </div>
+        
+        <div class="menu-buttons">
+            <button class="btn btn-primary" onclick="showPlayerNamePrompt()">
+                <span class="btn-icon">▶</span>
+                JOUER
+            </button>
+            <button class="btn btn-multiplayer" onclick="showMultiplayerScreen()">
+                <span class="btn-icon">⚔️</span>
+                MULTIJOUEUR
+            </button>
+            <button class="btn btn-shop" onclick="showShop()">
+                <span class="btn-icon">🛍️</span>
+                BOUTIQUE
+            </button>
+            <button class="btn btn-skins" onclick="showSkinSelector()">
+                <span class="btn-icon">🎨</span>
+                MES SKINS
+            </button>
+            <button class="btn btn-friends" onclick="showFriendsScreen()">
+                <span class="btn-icon">👥</span>
+                AMIS
+            </button>
+            <button class="btn btn-secondary" onclick="showControls()">
+                <span class="btn-icon">🎮</span>
+                COMMANDES
+            </button>
+            <button class="btn btn-secondary" onclick="showCredits()">
+                <span class="btn-icon">ℹ️</span>
+                À PROPOS
+            </button>
+        </div>
+        
+        <!-- Affichage des pièces et utilisateur en haut -->
+        <div class="player-info-header">
+            <!-- Bouton de connexion si non connecté -->
+            <button id="loginBtn" class="btn btn-primary" onclick="showLoginFromMenu()" style="display: none; padding: 0.6rem 1.5rem; font-size: 0.9rem; min-width: auto;">
+                🔓 SE CONNECTER
+            </button>
+            
+            <div class="current-user" onclick="toggleUserMenu()" style="display: none;">
+                <span class="user-avatar">👤</span>
+                <span id="currentUsername">Joueur</span>
+                <span class="dropdown-arrow">▼</span>
+            </div>
+            
+            <!-- Menu déroulant utilisateur -->
+            <div id="userMenu" class="user-dropdown-menu">
+                <div class="user-menu-header">
+                    <div class="user-menu-avatar">👤</div>
+                    <div class="user-menu-info">
+                        <div class="user-menu-name" id="userMenuName">CinderYaxley</div>
+                        <div class="user-menu-coins">💰 <span id="userMenuCoins">0</span> pièces</div>
+                    </div>
+                </div>
+                
+                <div class="user-menu-divider"></div>
+                
+                <div class="user-menu-section">
+                    <button class="user-menu-item" onclick="showFriendsScreen()">
+                        <span class="menu-icon">👥</span>
+                        <span class="menu-text">Mes Amis</span>
+                    </button>
+                    <button class="user-menu-item" onclick="showSettings()">
+                        <span class="menu-icon">⚙️</span>
+                        <span class="menu-text">Paramètres</span>
+                    </button>
+                    <button class="user-menu-item" onclick="showAddAccount()">
+                        <span class="menu-icon">➕</span>
+                        <span class="menu-text">Ajouter un compte</span>
+                    </button>
+                </div>
+                
+                <div class="user-menu-divider"></div>
+                
+                <div class="user-menu-section" id="otherAccountsList">
+                    <div class="user-menu-label">Autres comptes</div>
+                    <!-- Les autres comptes seront ajoutés ici dynamiquement -->
+                </div>
+                
+                <div class="user-menu-divider"></div>
+                
+                <button class="user-menu-item logout" onclick="logoutUser()">
+                    <span class="menu-icon">🚪</span>
+                    <span class="menu-text">Déconnexion</span>
+                </button>
+            </div>
+            
+            <div class="player-coins">
+                💰 <span id="playerCoins">0</span> pièces
+            </div>
+        </div>
+        
+        <div class="decorative-elements">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+        
+        <!-- Objets qui tombent -->
+        <div id="fallingObjects" class="falling-objects-container"></div>
+    </div>
+
+    <!-- Sélection de niveau -->
+    <div id="levelSelect" class="screen">
+        <h2 class="screen-title">CHOISIS TON NIVEAU</h2>
+        
+        <div class="modes-container" id="modesContainer">
+            <!-- Mode Classique (toujours disponible) -->
+            <div class="mode-card">
+                <div class="mode-header">
+                    <div class="mode-icon">🎮</div>
+                    <h3 class="mode-name">Niveaux</h3>
+                </div>
+                <div class="difficulties-row">
+                    <button class="difficulty-btn easy" onclick="startGame(1)">
+                        <div class="diff-label">1</div>
+                    </button>
+                    <button class="difficulty-btn medium" onclick="startGame(2)">
+                        <div class="diff-label">2</div>
+                    </button>
+                    <button class="difficulty-btn hard" onclick="startGame(3)">
+                        <div class="diff-label">3</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn btn-back" onclick="backToMenu()">
+            ← RETOUR
+        </button>
+    </div>
+
+    <!-- Écran de commandes -->
+    <div id="controlsScreen" class="screen">
+        <h2 class="screen-title">COMMANDES</h2>
+        
+        <div class="controls-container">
+            <div class="control-item">
+                <div class="key-display">←→↑↓</div>
+                <div class="control-desc">Se déplacer dans le labyrinthe</div>
+            </div>
+            
+            <div class="control-item">
+                <div class="key-display">ESPACE</div>
+                <div class="control-desc">Sauter par-dessus les obstacles</div>
+            </div>
+            
+            <div class="control-item">
+                <div class="key-display">ESC</div>
+                <div class="control-desc">Pause / Menu</div>
+            </div>
+        </div>
+        
+        <div class="game-info">
+            <h3>OBJECTIF</h3>
+            <p>🧀 Collectez tous les fromages</p>
+            <p>🚪 Atteignez la sortie</p>
+            <p>⚠️ Évitez les pièges mortels</p>
+            <p>⏱️ Faites le meilleur temps possible</p>
+        </div>
+        
+        <button class="btn btn-back" onclick="backToMenu()">
+            ← RETOUR
+        </button>
+    </div>
+
+    <!-- Écran de paramètres -->
+    <div id="settingsScreen" class="screen">
+        <h2 class="screen-title">⚙️ PARAMÈTRES</h2>
+        
+        <div class="settings-container">
+            <!-- Section Avatar -->
+            <div class="settings-section">
+                <h3 class="settings-section-title">👤 Avatar</h3>
+                <div class="avatar-grid"></div>
+            </div>
+            
+            <!-- Section Langue -->
+            <div class="settings-section">
+                <h3 class="settings-section-title">🌍 Langue / Language</h3>
+                <div class="settings-row">
+                    <label class="settings-label">Langue du jeu</label>
+                    <select id="languageSelect" class="settings-select" onchange="changeLanguage(this.value)">
+                        <option value="en" selected>🇬🇧 English</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="el">🇬🇷 Ελληνικά (Grec)</option>
+                        <option value="zh">🇨🇳 中文 (Chinois)</option>
+                        <option value="ru">🇷🇺 Русский (Russe)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Section Contrôles -->
+            <div class="settings-section">
+                <h3 class="settings-section-title">🎮 Contrôles</h3>
+                
+                <div class="settings-row">
+                    <label class="settings-label">Déplacer à gauche</label>
+                    <button class="settings-key-btn" id="keyLeft" onclick="remapKey('left')">
+                        <span id="keyLeftDisplay">←</span>
+                    </button>
+                </div>
+                
+                <div class="settings-row">
+                    <label class="settings-label">Déplacer à droite</label>
+                    <button class="settings-key-btn" id="keyRight" onclick="remapKey('right')">
+                        <span id="keyRightDisplay">→</span>
+                    </button>
+                </div>
+                
+                <div class="settings-row">
+                    <label class="settings-label">Sauter</label>
+                    <button class="settings-key-btn" id="keyJump" onclick="remapKey('jump')">
+                        <span id="keyJumpDisplay">ESPACE</span>
+                    </button>
+                </div>
+                
+                <div class="settings-row">
+                    <label class="settings-label">Pause</label>
+                    <button class="settings-key-btn" id="keyPause" onclick="remapKey('pause')">
+                        <span id="keyPauseDisplay">ESC</span>
+                    </button>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="resetDefaultKeys()" style="margin-top: 1rem;">
+                    🔄 Réinitialiser les touches
+                </button>
+            </div>
+            
+            <!-- Section Audio -->
+            <div class="settings-section">
+                <h3 class="settings-section-title">🔊 Audio</h3>
+                
+                <div class="settings-info">
+                    <p style="color: #999; font-style: italic;">Fonctionnalité à venir...</p>
+                    <p style="color: #666; font-size: 0.85rem;">Les effets sonores seront ajoutés prochainement</p>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn btn-back" onclick="backToMenu()">
+            ← RETOUR
+        </button>
+    </div>
+
+    <!-- Écran de jeu -->
+    <div id="gameScreen" class="screen">
+        <div class="game-hud">
+            <div class="hud-left">
+                <div class="hud-item">
+                    <span class="hud-icon">🧀</span>
+                    <span class="hud-value" id="cheeseCount">0/0</span>
+                </div>
+            </div>
+            
+            <div class="hud-center">
+                <!-- Barre de vie avec nom de la souris -->
+                <div class="player-info">
+                    <div class="player-name" id="playerName">Ma Souris</div>
+                    <div class="health-bar-container">
+                        <div class="health-bar" id="healthBar">
+                            <div class="health-fill" id="healthFill" style="width: 100%;"></div>
+                        </div>
+                        <span class="health-text" id="healthText">3/3</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barre de contrôle intégrée dans le HUD -->
+            <div class="control-bar">
+                <button class="control-btn" onclick="showModeSwitcher()" title="Changer de mode">
+                    <span class="btn-icon">🎮</span>
+                    <span class="btn-label">MODES</span>
+                </button>
+                <button class="control-btn" onclick="pauseGame()" title="Pause (ESC)">
+                    <span class="btn-icon">⏸</span>
+                    <span class="btn-label">PAUSE</span>
+                </button>
+                <button class="control-btn" onclick="toggleFullscreen()" title="Plein écran (F11)">
+                    <span class="btn-icon">⛶</span>
+                    <span class="btn-label">PLEIN ÉCRAN</span>
+                </button>
+            </div>
+            
+            <div class="hud-right">
+                <div class="hud-item">
+                    <span class="hud-icon">⏱️</span>
+                    <span class="hud-value" id="timeCount">0:00</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-icon">SCORE</span>
+                    <span class="hud-value" id="scoreCount">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        
+        <!-- Anciens boutons cachés -->
+        <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Plein écran (F11)" style="display: none;">
+            <span>⛶</span>
+        </button>
+        <button class="pause-btn" onclick="pauseGame()" title="Pause (ESC)" style="display: none;">
+            <span>⏸</span>
+        </button>
+        <button class="mode-switch-btn" onclick="showModeSwitcher()" title="Changer de mode" style="display: none;">
+            <span>🎮</span>
+        </button>
+        
+        <!-- Bouton de téléportation (visible uniquement avec skin Wizard) -->
+        <button class="teleport-btn" id="teleportBtn" style="display: none;" title="Cliquez sur le niveau pour vous téléporter">
+            <span>✨</span> TÉLÉPORTER
+        </button>
+    </div>
+
+    <!-- Sélecteur de mode en jeu -->
+    <div id="modeSwitcher" class="overlay-menu" style="display: none;">
+        <div class="menu-content mode-switcher-content">
+            <h2>🎮 CHANGER DE MODE</h2>
+            <p class="mode-switch-desc">Sélectionnez un nouveau mode et une difficulté</p>
+            
+            <div class="mini-modes-list" id="miniModesList">
+                <!-- Mode Classique -->
+                <div class="mini-mode-card">
+                    <div class="mini-mode-header">
+                        <span class="mini-mode-icon">🏠</span>
+                        <span class="mini-mode-name">Mode Classique</span>
+                    </div>
+                    <div class="mini-difficulties">
+                        <button class="mini-diff-btn easy" onclick="switchToMode(1)">★☆☆</button>
+                        <button class="mini-diff-btn medium" onclick="switchToMode(2)">★★☆</button>
+                        <button class="mini-diff-btn hard" onclick="switchToMode(3)">★★★</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="closeModeSwitcher()">
+                ← ANNULER
+            </button>
+        </div>
+    </div>
+
+    <!-- Menu pause -->
+    <div id="pauseMenu" class="overlay-menu">
+        <div class="menu-content">
+            <h2>⏸ PAUSE</h2>
+            <button class="btn btn-primary" onclick="resumeGame()">
+                ▶ REPRENDRE
+            </button>
+            <button class="btn btn-secondary" onclick="restartLevel()">
+                🔄 RECOMMENCER
+            </button>
+            <button class="btn btn-secondary" onclick="quitToMenu()">
+                ← MENU PRINCIPAL
+            </button>
+        </div>
+    </div>
+
+    <!-- Écran de victoire -->
+    <div id="victoryScreen" class="overlay-menu">
+        <div class="menu-content victory">
+            <h2 class="victory-title">🎉 NIVEAU TERMINÉ !</h2>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-label">Temps</div>
+                    <div class="stat-value" id="finalTime">0:00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Fromages</div>
+                    <div class="stat-value" id="finalCheese">0/0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="finalScore">0</div>
+                </div>
+            </div>
+            <div class="stars-display" id="starsDisplay">
+                ⭐⭐⭐
+            </div>
+            <button class="btn btn-primary" onclick="nextLevel()">
+                ▶ NIVEAU SUIVANT
+            </button>
+            <button class="btn btn-shop" onclick="showShop()">
+                🛍️ BOUTIQUE
+            </button>
+            <button class="btn btn-secondary" onclick="restartLevel()">
+                🔄 REJOUER
+            </button>
+            <button class="btn btn-secondary" onclick="quitToMenu()">
+                ← MENU
+            </button>
+        </div>
+    </div>
+
+    <!-- Écran game over -->
+    <div id="gameOverScreen" class="overlay-menu">
+        <div class="menu-content gameover">
+            <h2 class="gameover-title">💀 GAME OVER</h2>
+            <p class="gameover-message">La souris a péri dans le labyrinthe...</p>
+            <button class="btn btn-primary" onclick="restartLevel()">
+                🔄 RÉESSAYER
+            </button>
+            <button class="btn btn-secondary" onclick="quitToMenu()">
+                ← MENU
+            </button>
+        </div>
+    </div>
+
+    <!-- Écran Boutique -->
+    <div id="shopScreen" class="screen">
+        <h2 class="screen-title">🛍️ BOUTIQUE</h2>
+        
+        <div class="shop-balance">
+            💰 Votre solde : <span id="shopCoins">0</span> pièces
+        </div>
+        
+        <div class="shop-categories">
+            <button class="category-btn active" onclick="showCategory('skins')">
+                🎨 SKINS DE SOURIS
+            </button>
+            <button class="category-btn" onclick="showCategory('levels')">
+                🗺️ NIVEAUX BONUS
+            </button>
+        </div>
+        
+        <!-- Skins de souris -->
+        <div id="skinsCategory" class="shop-category active">
+            <div class="shop-grid">
+                <div class="shop-item" data-item="skin-golden" data-price="500" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-golden"></canvas>
+                    <div class="item-name">Souris Dorée</div>
+                    <div class="item-desc">⚡ Collecte automatique des fromages proches</div>
+                    <div class="item-price">💰 500</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-golden', 500)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-ninja" data-price="750" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-ninja"></canvas>
+                    <div class="item-name">Souris Ninja</div>
+                    <div class="item-desc">⚡ Vitesse +50% + Double saut</div>
+                    <div class="item-price">💰 750</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-ninja', 750)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-wizard" data-price="3000" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-wizard"></canvas>
+                    <div class="item-name">Souris Magicien</div>
+                    <div class="item-desc">⚡ Téléportation - Cliquez où vous voulez !</div>
+                    <div class="item-price">💰 3000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-wizard', 3000)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-robot" data-price="1200" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-robot"></canvas>
+                    <div class="item-name">Souris Robot</div>
+                    <div class="item-desc">⚡ Dash rapide (Shift) - Cooldown 2s</div>
+                    <div class="item-price">💰 1200</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-robot', 1200)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-pirate" data-price="800" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-pirate"></canvas>
+                    <div class="item-name">Souris Pirate</div>
+                    <div class="item-desc">⚡ Score x2 sur les fromages</div>
+                    <div class="item-price">💰 800</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-pirate', 800)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-vampire" data-price="900" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-vampire"></canvas>
+                    <div class="item-name">Souris Vampire</div>
+                    <div class="item-desc">⚡ Régénération de vie lente</div>
+                    <div class="item-price">💰 900</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-vampire', 900)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-knight" data-price="1100" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-knight"></canvas>
+                    <div class="item-name">Souris Chevalier</div>
+                    <div class="item-desc">⚡ Invincibilité 2s après un dégât</div>
+                    <div class="item-price">💰 1100</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-knight', 1100)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-angel" data-price="1300" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-angel"></canvas>
+                    <div class="item-name">Souris Ange</div>
+                    <div class="item-desc">⚡ Vol planant + Double saut + Immunité pièges</div>
+                    <div class="item-price">💰 1300</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-angel', 1300)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-demon" data-price="1400" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-demon"></canvas>
+                    <div class="item-name">Souris Démon</div>
+                    <div class="item-desc">⚡ Les ennemis vous fuient + Immunité ennemis</div>
+                    <div class="item-price">💰 1400</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-demon', 1400)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-alien" data-price="1600" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-alien"></canvas>
+                    <div class="item-name">Souris Alien</div>
+                    <div class="item-desc">⚡ Gravité réduite + Double saut</div>
+                    <div class="item-price">💰 1600</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-alien', 1600)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-rainbow" data-price="2000" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-rainbow"></canvas>
+                    <div class="item-name">Souris Arc-en-ciel</div>
+                    <div class="item-desc">⚡ Bonus aléatoire toutes les 5s</div>
+                    <div class="item-price">💰 2000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-rainbow', 2000)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="skin-legendary" data-price="5000" data-owned="false">
+                    <canvas class="item-preview" width="160" height="160" data-skin="skin-legendary"></canvas>
+                    <div class="item-name">Souris Légendaire</div>
+                    <div class="item-desc">⚡ TOUS LES POUVOIRS COMBINÉS !</div>
+                    <div class="item-price">💰 5000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-legendary', 5000)">ACHETER</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Niveaux bonus -->
+        <div id="levelsCategory" class="shop-category">
+            <div class="shop-grid">
+                <div class="shop-item" data-item="level-11" data-price="0" data-owned="true">
+                    <div class="item-icon">🌺</div>
+                    <div class="item-name">Jardin Paisible</div>
+                    <div class="item-desc">✨ Mode paisible sans ennemis ni pièges - GRATUIT !</div>
+                    <div class="item-price">💰 GRATUIT</div>
+                    <button class="btn btn-buy" disabled style="background: #4CAF50;">POSSÉDÉ</button>
+                </div>
+                
+                <div class="shop-item" data-item="level-4" data-price="1500" data-owned="false">
+                    <div class="item-icon">🏰</div>
+                    <div class="item-name">Le Château Hanté</div>
+                    <div class="item-desc">👻 Affrontez les fantômes dans un château mystérieux</div>
+                    <div class="item-price">💰 1500</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-4', 1500)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="level-5" data-price="2000" data-owned="false">
+                    <div class="item-icon">🌋</div>
+                    <div class="item-name">La Caverne de Lave</div>
+                    <div class="item-desc">🔥 Traversez les flammes et la lave brûlante</div>
+                    <div class="item-price">💰 2000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-5', 2000)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="level-6" data-price="2500" data-owned="false">
+                    <div class="item-icon">❄️</div>
+                    <div class="item-name">Le Temple Glacé</div>
+                    <div class="item-desc">🧊 Glissez sur la glace dans un temple gelé</div>
+                    <div class="item-price">💰 2500</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-6', 2500)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="level-7" data-price="3000" data-owned="false">
+                    <div class="item-icon">🌊</div>
+                    <div class="item-name">Les Égouts Aquatiques</div>
+                    <div class="item-desc">💧 Nagez dans les égouts profonds</div>
+                    <div class="item-price">💰 3000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-7', 3000)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="level-8" data-price="3500" data-owned="false">
+                    <div class="item-icon">⚡</div>
+                    <div class="item-name">La Tour Électrique</div>
+                    <div class="item-desc">⚡ Escaladez la tour électrifiée</div>
+                    <div class="item-price">💰 3500</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-8', 3500)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="level-9" data-price="4000" data-owned="false">
+                    <div class="item-icon">🌙</div>
+                    <div class="item-name">Le Donjon Nocturne</div>
+                    <div class="item-desc">🌙 Explorez le donjon dans l'obscurité</div>
+                    <div class="item-price">💰 4000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-9', 4000)">ACHETER</button>
+                </div>
+                
+                <div class="shop-item" data-item="level-10" data-price="5000" data-owned="false">
+                    <div class="item-icon">☠️</div>
+                    <div class="item-name">L'Antre du Boss Final</div>
+                    <div class="item-desc">💀 Le défi ultime avec le boss final</div>
+                    <div class="item-price">💰 5000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-10', 5000)">ACHETER</button>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn btn-back" onclick="backToMenu()">
+            ← RETOUR
+        </button>
+    </div>
+
+    <!-- Écran Sélection de Skins -->
+    <div id="skinSelectorScreen" class="screen">
+        <h2 class="screen-title">🎨 MES SKINS</h2>
+        
+        <div class="current-skin-display">
+            <div class="current-skin-label">Skin actuel :</div>
+            <div class="current-skin-preview" id="currentSkinPreview">
+                <div class="skin-icon">🐭</div>
+                <div class="skin-name">Souris Classique</div>
+            </div>
+        </div>
+        
+        <div class="owned-skins-grid" id="ownedSkinsGrid">
+            <!-- Les skins possédés seront ajoutés ici dynamiquement -->
+        </div>
+        
+        <button class="btn btn-back" onclick="backToMenu()">
+            ← RETOUR
+        </button>
+    </div>
+
+    <!-- Écran des Amis -->
+    <div id="friendsScreen" class="screen">
+        <h2 class="screen-title">👥 MES AMIS</h2>
+        
+        <!-- Barre de recherche et statistiques -->
+        <div class="friends-header">
+            <div class="friends-search-bar">
+                <input type="text" id="friendSearchInput" class="friend-search-input" placeholder="🔍 Rechercher un joueur...">
+                <button class="btn btn-primary" onclick="searchFriend()">CHERCHER</button>
+            </div>
+            <div class="friends-stats">
+                <div class="stat-item">
+                    <span class="stat-icon">👥</span>
+                    <span class="stat-value" id="friendsCount">0</span>
+                    <span class="stat-label">Amis</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">📨</span>
+                    <span class="stat-value" id="requestsCount">0</span>
+                    <span class="stat-label">Demandes</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglets -->
+        <div class="friends-tabs">
+            <button class="friends-tab active" data-tab="all" onclick="switchFriendsTab('all')">
+                <span class="tab-icon">👥</span>
+                TOUS LES AMIS
+            </button>
+            <button class="friends-tab" data-tab="online" onclick="switchFriendsTab('online')">
+                <span class="tab-icon">🟢</span>
+                EN LIGNE
+            </button>
+            <button class="friends-tab" data-tab="requests" onclick="switchFriendsTab('requests')">
+                <span class="tab-icon">📨</span>
+                DEMANDES
+            </button>
+        </div>
+        
+        <!-- Contenu des onglets -->
+        <div class="friends-content">
+            <!-- Tous les amis -->
+            <div id="friendsTabAll" class="friends-tab-content active">
+                <div id="friendsList" class="friends-list">
+                    <!-- Les amis seront ajoutés ici dynamiquement -->
+                    <div class="empty-state">
+                        <div class="empty-icon">😢</div>
+                        <div class="empty-text">Vous n'avez pas encore d'amis</div>
+                        <div class="empty-hint">Utilisez la barre de recherche pour trouver des joueurs !</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Amis en ligne -->
+            <div id="friendsTabOnline" class="friends-tab-content">
+                <div id="friendsListOnline" class="friends-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">💤</div>
+                        <div class="empty-text">Aucun ami en ligne</div>
+                        <div class="empty-hint">Vos amis se connecteront bientôt !</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Demandes d'amis -->
+            <div id="friendsTabRequests" class="friends-tab-content">
+                <div class="requests-section">
+                    <h3 class="section-title">📥 Demandes reçues</h3>
+                    <div id="incomingRequestsList" class="requests-list">
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-text">Aucune demande en attente</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="requests-section">
+                    <h3 class="section-title">📤 Demandes envoyées</h3>
+                    <div id="outgoingRequestsList" class="requests-list">
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-text">Aucune demande envoyée</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Résultats de recherche (overlay) -->
+        <div id="searchResultsOverlay" class="search-results-overlay" style="display: none;">
+            <div class="search-results-container">
+                <div class="search-results-header">
+                    <h3>🔍 Résultats de recherche</h3>
+                    <button class="close-btn" onclick="closeSearchResults()">✕</button>
+                </div>
+                <div id="searchResultsList" class="search-results-list">
+                    <!-- Les résultats seront ajoutés ici -->
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn btn-back" onclick="backToMenu()">
+            ← RETOUR
+        </button>
+    </div>
+
+    <!-- Écran Multijoueur -->
+    <div id="multiplayerScreen" class="screen">
+        <h2 class="screen-title">⚔️ MULTIJOUEUR</h2>
+        
+        <!-- Sélection d'équipe -->
+        <div class="team-selection-container">
+            <div class="team-selection-header">
+                <h3>🎯 Choisis ton équipe !</h3>
+                <p class="team-selection-subtitle">Affronte d'autres joueurs dans des combats épiques</p>
+            </div>
+            
+            <div class="teams-grid">
+                <!-- Équipe Rouge -->
+                <div class="team-card red" onclick="selectTeam('red')">
+                    <div class="team-icon">🔴</div>
+                    <div class="team-name">ÉQUIPE ROUGE</div>
+                    <div class="team-stats">
+                        <div class="team-stat">
+                            <span class="stat-label">Joueurs</span>
+                            <span class="stat-value" id="redTeamCount">0</span>
+                        </div>
+                        <div class="team-stat">
+                            <span class="stat-label">Victoires</span>
+                            <span class="stat-value">847</span>
+                        </div>
+                    </div>
+                    <button class="team-select-btn red-btn">REJOINDRE</button>
+                </div>
+                
+                <!-- Équipe Bleue -->
+                <div class="team-card blue" onclick="selectTeam('blue')">
+                    <div class="team-icon">🔵</div>
+                    <div class="team-name">ÉQUIPE BLEUE</div>
+                    <div class="team-stats">
+                        <div class="team-stat">
+                            <span class="stat-label">Joueurs</span>
+                            <span class="stat-value" id="blueTeamCount">0</span>
+                        </div>
+                        <div class="team-stat">
+                            <span class="stat-label">Victoires</span>
+                            <span class="stat-value">823</span>
+                        </div>
+                    </div>
+                    <button class="team-select-btn blue-btn">REJOINDRE</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Liste des serveurs -->
+        <div class="servers-container">
+            <div class="servers-header">
+                <h3>🌐 Serveurs Disponibles</h3>
+                <div class="servers-filters">
+                    <select id="languageFilter" class="filter-select" onchange="filterServers()">
+                        <option value="all">Toutes langues</option>
+                        <option value="fr" selected>🇫🇷 Français</option>
+                        <option value="en">🇬🇧 Anglais</option>
+                        <option value="es">🇪🇸 Espagnol</option>
+                        <option value="de">🇩🇪 Allemand</option>
+                    </select>
+                    <button class="btn-refresh" onclick="refreshServers()">🔄 Actualiser</button>
+                </div>
+            </div>
+            
+            <div id="serversList" class="servers-list">
+                <!-- Les serveurs seront ajoutés ici dynamiquement -->
+            </div>
+        </div>
+        
+        <!-- Section amis en jeu -->
+        <div class="friends-playing-container">
+            <h3>👥 Amis en jeu</h3>
+            <div id="friendsPlayingList" class="friends-playing-list">
+                <!-- Les amis en jeu seront ajoutés ici -->
+            </div>
+        </div>
+        
+        <button class="btn btn-back" onclick="backToMenu()">
+            ← RETOUR
+        </button>
+    </div>
+
+    <!-- Écran de jeu multijoueur (pendant la partie) -->
+    <div id="multiplayerGameScreen" class="screen">
+        <div class="multiplayer-game-ui">
+            <!-- En-tête avec scores des équipes -->
+            <div class="teams-score-header">
+                <div class="team-score red">
+                    <span class="team-icon">🔴</span>
+                    <span class="team-name">ROUGE</span>
+                    <span class="team-score-value" id="redScore">0</span>
+                </div>
+                <div class="match-timer" id="matchTimer">5:00</div>
+                <div class="team-score blue">
+                    <span class="team-score-value" id="blueScore">0</span>
+                    <span class="team-name">BLEUE</span>
+                    <span class="team-icon">🔵</span>
+                </div>
+            </div>
+            
+            <!-- Canvas de jeu -->
+            <canvas id="multiplayerCanvas" width="800" height="600"></canvas>
+            
+            <!-- Chat en ligne (style Roblox) -->
+            <div class="game-chat-container">
+                <div class="chat-toggle-btn" onclick="toggleChat()">
+                    💬 <span id="unreadCount" class="unread-badge" style="display: none;">0</span>
+                </div>
+                
+                <div id="chatBox" class="chat-box">
+                    <div class="chat-header">
+                        <span class="chat-title">💬 Chat</span>
+                        <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Les messages seront ajoutés ici -->
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" class="chat-input" placeholder="Tapez un message..." maxlength="100" onkeypress="if(event.key==='Enter') sendChatMessage()" onkeydown="event.stopPropagation()">
+                        <button class="chat-send-btn" onclick="sendChatMessage()">📤</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Liste des joueurs (tableau des scores) -->
+            <div class="players-list-container" id="playersListContainer">
+                <div class="players-list-header">
+                    <h3>📊 JOUEURS</h3>
+                    <button class="close-btn-small" onclick="togglePlayersList()">✕</button>
+                </div>
+                <div class="players-list-content">
+                    <div class="team-players red-team">
+                        <h4>🔴 ÉQUIPE ROUGE</h4>
+                        <div id="redTeamPlayers" class="team-players-list">
+                            <!-- Joueurs équipe rouge -->
+                        </div>
+                    </div>
+                    <div class="team-players blue-team">
+                        <h4>🔵 ÉQUIPE BLEUE</h4>
+                        <div id="blueTeamPlayers" class="team-players-list">
+                            <!-- Joueurs équipe bleue -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bouton pour afficher les joueurs -->
+            <button class="toggle-players-btn" onclick="togglePlayersList()">
+                👥 JOUEURS
+            </button>
+            
+            <!-- Bouton pause -->
+            <button class="multiplayer-pause-btn" onclick="pauseMultiplayerGame()">
+                ⏸️ PAUSE
+            </button>
+            
+            <!-- Bouton quitter direct -->
+            <button class="multiplayer-quit-btn" onclick="quitMultiplayerGame()">
+                🚪 QUIT
+            </button>
+            
+            <!-- Menu Pause Multijoueur -->
+            <div id="multiplayerPauseMenu" class="pause-menu" style="display: none;">
+                <div class="pause-content">
+                    <h2>⏸️ PAUSE</h2>
+                    <button class="btn btn-primary" onclick="resumeMultiplayerGame()">
+                        <span class="btn-icon">▶</span>
+                        CONTINUE
+                    </button>
+                    <button class="btn btn-secondary" onclick="quitMultiplayerGame()">
+                        <span class="btn-icon">🚪</span>
+                        QUIT
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="engine.js"></script>
+    <script src="graphics.js"></script>
+    <script src="levels.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

@@ -137,7 +137,7 @@ class GameEngine {
         const isMobile = windowWidth <= 768;
         
         if (isMobile) {
-            // Sur mobile : adapter au viewport en mode paysage
+            // Sur mobile : adapter au viewport
             const isLandscape = windowWidth > windowHeight;
             
             if (isLandscape) {
@@ -145,9 +145,10 @@ class GameEngine {
                 this.width = Math.min(windowWidth - 20, 896); // Max 896px en paysage
                 this.height = Math.min(windowHeight - 100, 504); // Garder de la place pour les contrôles
             } else {
-                // Mode portrait : taille réduite
+                // Mode portrait : adapter à l'écran en gardant de la place pour les contrôles
                 this.width = windowWidth - 20;
-                this.height = Math.min(windowHeight * 0.5, 400);
+                // Augmenter la hauteur du canvas en portrait (70% au lieu de 50%)
+                this.height = Math.min(windowHeight * 0.7, windowWidth * 1.2); // Ratio plus vertical
             }
         } else {
             // Sur desktop/tablette : taille normale

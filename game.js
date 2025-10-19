@@ -1836,6 +1836,11 @@ function showSettings() {
     }
 }
 
+function showCredits() {
+    hideAllScreens();
+    document.getElementById('creditsScreen').classList.add('active');
+}
+
 function displayAvatarSelector() {
     const avatarGrid = document.querySelector('.avatar-grid');
     if (!avatarGrid) return;
@@ -3708,7 +3713,7 @@ function initTouchControls() {
         e.stopPropagation();
         touchControls.jump = true;
         freshJump.style.transform = 'scale(0.85)';
-        console.log('⬆️ Saut activé (touch)');
+        // console.log('⬆️ Saut activé (touch)'); // Désactivé pour performance
     }, { passive: false });
     
     const jumpEnd = (e) => {
@@ -3728,7 +3733,7 @@ function initTouchControls() {
         e.stopPropagation();
         touchControls.jump = true;
         freshJump.style.transform = 'scale(0.85)';
-        console.log('⬆️ Saut activé (mouse)');
+        // console.log('⬆️ Saut activé (mouse)'); // Désactivé pour performance
     });
     
     freshJump.addEventListener('mouseup', jumpEnd);
@@ -3745,7 +3750,7 @@ function initTouchControls() {
         e.stopPropagation();
         touchControls.attack = true;
         freshAttack.style.transform = 'scale(0.85)';
-        console.log('⚔️ Attaque activée (touch)');
+        // console.log('⚔️ Attaque activée (touch)'); // Désactivé pour performance
     }, { passive: false });
     
     const attackEnd = (e) => {
@@ -3765,7 +3770,7 @@ function initTouchControls() {
         e.stopPropagation();
         touchControls.attack = true;
         freshAttack.style.transform = 'scale(0.85)';
-        console.log('⚔️ Attaque activée (mouse)');
+        // console.log('⚔️ Attaque activée (mouse)'); // Désactivé pour performance
     });
     
     freshAttack.addEventListener('mouseup', attackEnd);

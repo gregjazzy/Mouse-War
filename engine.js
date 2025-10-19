@@ -167,6 +167,22 @@ class GameEngine {
         const player = this.player;
         const attackRange = player.attackRange;
         
+        // 🔧 DÉGÂTS PAR SKIN/ARME
+        const weaponDamage = {
+            'default': 1,           // Fromage : 1 dégât
+            'skin-ninja': 2,        // Ninja : 2 dégâts
+            'skin-pirate': 1,       // Pirate : 1 dégât
+            'skin-robot': 2,        // Robot : 2 dégâts
+            'skin-knight': 2,       // Chevalier : 2 dégâts
+            'skin-wizard': 3,       // Sorcier : 3 dégâts (tue en 1 coup)
+            'skin-dragon': 999,     // Dragon Légendaire : INSTANT KILL
+            'skin-rainbow': 999,    // Arc-en-ciel : INSTANT KILL
+            'skin-golden': 999      // Souris dorée : INSTANT KILL
+        };
+        
+        const damage = weaponDamage[player.currentSkin] || 1;
+        console.log(`⚔️ Attaque avec ${player.currentSkin} - Dégâts: ${damage}`);
+        
         // Calculer la zone d'attaque (devant le joueur)
         const attackX = player.direction === 'right' 
             ? player.x + player.width 
@@ -196,17 +212,22 @@ class GameEngine {
                     playSound('hit');
                 }
                 
-                // TUER L'ENNEMI DIRECTEMENT
-                this.enemies.splice(i, 1);
-                this.score += 50;
-                enemiesKilled++;
+                // 🔧 ENLEVER DES PV AU LIEU DE TUER DIRECTEMENT
+                enemy.health -= damage;
+                console.log(`💥 Ennemi touché ! HP: ${enemy.health}/${enemy.maxHealth}`);
                 
-                // Mettre à jour l'affichage du score
-                if (typeof updateScore === 'function') {
-                    updateScore(this.score);
+                // Si l'ennemi est mort, le retirer
+                if (enemy.health <= 0) {
+                    this.enemies.splice(i, 1);
+                    this.score += 50;
+                    enemiesKilled++;
+                    console.log('💀 Ennemi éliminé ! Score +50');
+                    
+                    // Mettre à jour l'affichage du score
+                    if (typeof updateScore === 'function') {
+                        updateScore(this.score);
+                    }
                 }
-                
-                console.log('💀 Ennemi éliminé ! Score +50');
             }
         }
         
@@ -338,7 +359,9 @@ class GameEngine {
                             targetChangeTime: Math.random() * 120 + 60,
                             stuckTimer: 0,
                             lastX: x,
-                            lastY: y
+                            lastY: y,
+                            maxHealth: 3,    // 🔧 Points de vie max
+                            health: 3        // 🔧 Points de vie actuels
                         });
                         break;
                     case 9: // Sortie
@@ -743,6 +766,14 @@ class GameEngine {
     }
     
     updateEnemies(deltaTime) {
+        // Ajuster la vitesse des ennemis selon la difficulté
+        const difficultyMultiplier = {
+            'easy': 0.7,      // 30% plus lent
+            'medium': 1.0,    // Vitesse normale
+            'hard': 1.5       // 50% plus rapide
+        };
+        const speedMult = difficultyMultiplier[this.difficulty] || 1.0;
+        
         for (let enemy of this.enemies) {
             // Sauvegarder l'ancienne position
             const oldX = enemy.x;
@@ -766,8 +797,8 @@ class GameEngine {
                 }
             }
             
-            // Déplacement horizontal
-            enemy.x += enemy.velocityX;
+            // Déplacement horizontal (avec multiplication par difficulté)
+            enemy.x += enemy.velocityX * speedMult;
             
             // Vérifier les collisions avec les murs
             let hitWall = false;

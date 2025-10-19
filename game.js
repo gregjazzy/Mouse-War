@@ -50,15 +50,15 @@ function loadAvailableModes() {
                     <h3 class="mode-name">${modeData.name}</h3>
                 </div>
                 <div class="difficulties-row">
-                    <button class="difficulty-btn easy" onclick="startGame(${levelNumber})">
+                    <button class="difficulty-btn easy" onclick="startGame(${levelNumber}, 'easy')">
                         <div class="diff-stars">★☆☆</div>
                         <div class="diff-label">Facile</div>
                     </button>
-                    <button class="difficulty-btn medium" onclick="startGame(${levelNumber})">
+                    <button class="difficulty-btn medium" onclick="startGame(${levelNumber}, 'medium')">
                         <div class="diff-stars">★★☆</div>
                         <div class="diff-label">Moyen</div>
                     </button>
-                    <button class="difficulty-btn hard" onclick="startGame(${levelNumber})">
+                    <button class="difficulty-btn hard" onclick="startGame(${levelNumber}, 'hard')">
                         <div class="diff-stars">★★★</div>
                         <div class="diff-label">Difficile</div>
                     </button>
@@ -187,12 +187,18 @@ function hideAllScreens() {
 }
 
 // Démarrer une partie
-function startGame(levelNumber) {
+function startGame(levelNumber, difficulty = 'medium') {
     hideAllScreens();
     document.getElementById('gameScreen').classList.add('active');
     
     // Forcer l'orientation paysage sur mobile
     forceLandscapeOrientation();
+    
+    // 🔧 RÉINITIALISER les contrôles tactiles APRÈS le changement d'orientation
+    setTimeout(() => {
+        initTouchControls();
+        console.log('🎮 Contrôles tactiles réinitialisés après orientation');
+    }, 300); // Délai pour laisser l'orientation se stabiliser
     
     // Initialiser le nom du joueur
     const playerNameEl = document.getElementById('playerName');
@@ -204,11 +210,32 @@ function startGame(levelNumber) {
         gameEngine = new GameEngine();
     }
     
-    // 🔧 RÉINITIALISER LES VIES À CHAQUE DÉMARRAGE
-    gameEngine.lives = 3;
+    // 🔧 APPLIQUER LA DIFFICULTÉ
+    gameEngine.difficulty = difficulty;
+    console.log('🎯 Difficulté sélectionnée:', difficulty);
+    
+    // Ajuster les vies selon la difficulté
+    let maxLives = 3; // Par défaut
+    switch(difficulty) {
+        case 'easy':
+            gameEngine.lives = 5;
+            maxLives = 5;
+            break;
+        case 'medium':
+            gameEngine.lives = 3;
+            maxLives = 3;
+            break;
+        case 'hard':
+            gameEngine.lives = 2;
+            maxLives = 2;
+            break;
+    }
+    
+    // Sauvegarder le max de vies pour l'affichage
+    gameEngine.maxLives = maxLives;
     
     // Initialiser la barre de vie IMMÉDIATEMENT
-    updateHealthBar(3, 3);
+    updateHealthBar(gameEngine.lives, maxLives);
     
     // ✅ CHARGER LE SKIN ÉQUIPÉ DU JOUEUR
     console.log('🎮 Démarrage du jeu - currentUser:', currentUser);
@@ -236,8 +263,11 @@ function startGame(levelNumber) {
     // 🔧 VÉRIFIER QUE L'ÉCOUTEUR DE CLIC EST BIEN ACTIF
     console.log('🖱️ Canvas pour attaque:', gameEngine.canvas ? 'OK' : 'ERREUR');
     
-    // Initialiser les contrôles tactiles
-    setTimeout(() => initTouchControls(), 100);
+    // Initialiser les contrôles tactiles APRÈS un délai
+    setTimeout(() => {
+        console.log('🎮 Initialisation différée des contrôles tactiles...');
+        initTouchControls();
+    }, 500);
     
     // Démarrer la boucle de jeu
     if (animationId) {
@@ -249,8 +279,8 @@ function startGame(levelNumber) {
     // Forcer la mise à jour de l'UI après un court délai
     setTimeout(() => {
         if (gameEngine) {
-            updateHealthBar(gameEngine.lives, 3);
-            console.log('❤️ Vies après initialisation:', gameEngine.lives);
+            updateHealthBar(gameEngine.lives, gameEngine.maxLives);
+            console.log('❤️ Vies après initialisation:', gameEngine.lives, '/', gameEngine.maxLives);
         }
     }, 100);
 }
@@ -3521,11 +3551,22 @@ let touchControls = {
     },
     jump: false,
     attack: false,
-    attackProcessed: false
+    attackProcessed: false,
+    // Pour nettoyer les event listeners
+    mouseMoveHandler: null,
+    mouseUpHandler: null
 };
 
 // Initialiser les contrôles tactiles
 function initTouchControls() {
+    // Nettoyer les anciens listeners globaux (si ils existent)
+    if (touchControls.mouseMoveHandler) {
+        document.removeEventListener('mousemove', touchControls.mouseMoveHandler);
+    }
+    if (touchControls.mouseUpHandler) {
+        document.removeEventListener('mouseup', touchControls.mouseUpHandler);
+    }
+    
     const joystickBase = document.querySelector('.joystick-base');
     const joystickStick = document.getElementById('joystickStick');
     const btnJump = document.getElementById('btnJump');
@@ -3555,7 +3596,9 @@ function initTouchControls() {
     const freshJump = document.getElementById('btnJump');
     const freshAttack = document.getElementById('btnAttack');
     
-    // Joystick - Touch Start (sur la base entière)
+    // ============================================
+    // JOYSTICK - TOUCH (Mobile réel)
+    // ============================================
     freshBase.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -3567,10 +3610,9 @@ function initTouchControls() {
         touchControls.joystick.startX = rect.left + rect.width / 2;
         touchControls.joystick.startY = rect.top + rect.height / 2;
         
-        console.log('🕹️ Joystick activé');
+        console.log('🕹️ Joystick activé (touch)');
     }, { passive: false });
     
-    // Joystick - Touch Move (sur la base)
     freshBase.addEventListener('touchmove', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -3580,7 +3622,6 @@ function initTouchControls() {
         const deltaX = touch.clientX - touchControls.joystick.startX;
         const deltaY = touch.clientY - touchControls.joystick.startY;
         
-        // Limiter le déplacement au rayon du joystick
         const maxDistance = 40;
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         
@@ -3593,17 +3634,14 @@ function initTouchControls() {
             touchControls.joystick.currentY = deltaY;
         }
         
-        // Déplacer visuellement le stick
         freshStick.style.transform = `translate(calc(-50% + ${touchControls.joystick.currentX}px), calc(-50% + ${touchControls.joystick.currentY}px))`;
         
-        // Calculer la direction
         touchControls.joystick.directionX = touchControls.joystick.currentX / maxDistance;
         touchControls.joystick.directionY = touchControls.joystick.currentY / maxDistance;
     }, { passive: false });
     
-    // Joystick - Touch End
     const joystickEnd = (e) => {
-        e.preventDefault();
+        if (e.preventDefault) e.preventDefault();
         touchControls.joystick.active = false;
         touchControls.joystick.directionX = 0;
         touchControls.joystick.directionY = 0;
@@ -3614,17 +3652,67 @@ function initTouchControls() {
     freshBase.addEventListener('touchend', joystickEnd, { passive: false });
     freshBase.addEventListener('touchcancel', joystickEnd, { passive: false });
     
-    // Bouton Sauter
+    // ============================================
+    // JOYSTICK - MOUSE (Mode dev Chrome sur PC)
+    // ============================================
+    freshBase.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        touchControls.joystick.active = true;
+        freshStick.classList.add('active');
+        
+        const rect = freshBase.getBoundingClientRect();
+        touchControls.joystick.startX = rect.left + rect.width / 2;
+        touchControls.joystick.startY = rect.top + rect.height / 2;
+        
+        console.log('🕹️ Joystick activé (mouse)');
+    });
+    
+    // IMPORTANT : mousemove sur DOCUMENT (pas sur freshBase)
+    const handleMouseMove = (e) => {
+        if (!touchControls.joystick.active) return;
+        
+        const deltaX = e.clientX - touchControls.joystick.startX;
+        const deltaY = e.clientY - touchControls.joystick.startY;
+        
+        const maxDistance = 40;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        
+        if (distance > maxDistance) {
+            const angle = Math.atan2(deltaY, deltaX);
+            touchControls.joystick.currentX = Math.cos(angle) * maxDistance;
+            touchControls.joystick.currentY = Math.sin(angle) * maxDistance;
+        } else {
+            touchControls.joystick.currentX = deltaX;
+            touchControls.joystick.currentY = deltaY;
+        }
+        
+        freshStick.style.transform = `translate(calc(-50% + ${touchControls.joystick.currentX}px), calc(-50% + ${touchControls.joystick.currentY}px))`;
+        
+        touchControls.joystick.directionX = touchControls.joystick.currentX / maxDistance;
+        touchControls.joystick.directionY = touchControls.joystick.currentY / maxDistance;
+    };
+    
+    // Sauvegarder les handlers pour pouvoir les nettoyer plus tard
+    touchControls.mouseMoveHandler = handleMouseMove;
+    touchControls.mouseUpHandler = joystickEnd;
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', joystickEnd);
+    
+    // ============================================
+    // BOUTON SAUTER - TOUCH (Mobile/Tablette)
+    // ============================================
     freshJump.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
         touchControls.jump = true;
         freshJump.style.transform = 'scale(0.85)';
-        console.log('⬆️ Saut activé');
+        console.log('⬆️ Saut activé (touch)');
     }, { passive: false });
     
     const jumpEnd = (e) => {
-        e.preventDefault();
+        if (e.preventDefault) e.preventDefault();
         touchControls.jump = false;
         freshJump.style.transform = 'scale(1)';
     };
@@ -3632,17 +3720,33 @@ function initTouchControls() {
     freshJump.addEventListener('touchend', jumpEnd, { passive: false });
     freshJump.addEventListener('touchcancel', jumpEnd, { passive: false });
     
-    // Bouton Attaquer
+    // ============================================
+    // BOUTON SAUTER - MOUSE (PC/Mode dev)
+    // ============================================
+    freshJump.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        touchControls.jump = true;
+        freshJump.style.transform = 'scale(0.85)';
+        console.log('⬆️ Saut activé (mouse)');
+    });
+    
+    freshJump.addEventListener('mouseup', jumpEnd);
+    freshJump.addEventListener('mouseleave', jumpEnd);
+    
+    // ============================================
+    // BOUTON ATTAQUER - TOUCH (Mobile/Tablette)
+    // ============================================
     freshAttack.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
         touchControls.attack = true;
         freshAttack.style.transform = 'scale(0.85)';
-        console.log('⚔️ Attaque activée');
+        console.log('⚔️ Attaque activée (touch)');
     }, { passive: false });
     
     const attackEnd = (e) => {
-        e.preventDefault();
+        if (e.preventDefault) e.preventDefault();
         touchControls.attack = false;
         freshAttack.style.transform = 'scale(1)';
     };
@@ -3650,37 +3754,49 @@ function initTouchControls() {
     freshAttack.addEventListener('touchend', attackEnd, { passive: false });
     freshAttack.addEventListener('touchcancel', attackEnd, { passive: false });
     
-    console.log('✅ Contrôles tactiles prêts !');
+    // ============================================
+    // BOUTON ATTAQUER - MOUSE (PC/Mode dev)
+    // ============================================
+    freshAttack.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        touchControls.attack = true;
+        freshAttack.style.transform = 'scale(0.85)';
+        console.log('⚔️ Attaque activée (mouse)');
+    });
+    
+    freshAttack.addEventListener('mouseup', attackEnd);
+    freshAttack.addEventListener('mouseleave', attackEnd);
+    
+    console.log('✅ Contrôles tactiles prêts (touch + mouse) !');
 }
 
 // Mettre à jour les contrôles du moteur de jeu avec les contrôles tactiles
 function updateGameEngineWithTouchControls() {
     if (!gameEngine) return;
     
+    // ⚠️ NE PAS ÉCRASER LES TOUCHES CLAVIER !
+    // On active uniquement, on ne désactive jamais (le clavier s'occupe de ça)
+    
     // Déplacement horizontal depuis le joystick
     if (Math.abs(touchControls.joystick.directionX) > 0.2) {
         if (touchControls.joystick.directionX < 0) {
-            gameEngine.keys.left = true;
-            gameEngine.keys.right = false;
+            gameEngine.keys['ArrowLeft'] = true;
+            // Ne PAS désactiver ArrowRight (le joueur peut appuyer sur la touche du clavier)
         } else {
-            gameEngine.keys.right = true;
-            gameEngine.keys.left = false;
+            gameEngine.keys['ArrowRight'] = true;
+            // Ne PAS désactiver ArrowLeft
         }
-    } else {
-        gameEngine.keys.left = false;
-        gameEngine.keys.right = false;
     }
+    // ⚠️ NE PAS METTRE À FALSE quand le joystick n'est pas actif !
+    // Sinon ça écrase les touches du clavier
     
     // Saut depuis le bouton
     if (touchControls.jump) {
-        gameEngine.keys.jump = true;
-        gameEngine.keys.up = true;
-        gameEngine.keys.space = true;
-    } else {
-        gameEngine.keys.jump = false;
-        gameEngine.keys.up = false;
-        gameEngine.keys.space = false;
+        gameEngine.keys['ArrowUp'] = true;
+        gameEngine.keys[' '] = true; // Espace aussi
     }
+    // ⚠️ NE PAS METTRE À FALSE ici non plus
     
     // Attaque depuis le bouton (simule un clic sur le canvas)
     if (touchControls.attack && !touchControls.attackProcessed) {

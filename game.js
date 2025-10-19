@@ -334,8 +334,22 @@ function nextLevel() {
         const nextLevelNumber = gameEngine.currentLevel + 1;
         const totalLevels = getTotalLevels();
         
+        console.log('🎮 Niveau actuel:', gameEngine.currentLevel);
+        console.log('🎮 Prochain niveau:', nextLevelNumber);
+        console.log('🎮 Total niveaux:', totalLevels);
+        console.log('🎮 Niveaux possédés:', playerData.ownedItems);
+        
         if (nextLevelNumber <= totalLevels) {
-            startGame(nextLevelNumber);
+            // Vérifier si le joueur possède le niveau suivant
+            const levelId = `level-${nextLevelNumber}`;
+            if (playerData.ownedItems.includes(levelId)) {
+                startGame(nextLevelNumber);
+            } else {
+                // Le joueur n'a pas acheté ce niveau
+                console.log('⚠️ Niveau non possédé:', levelId);
+                alert(`Niveau ${nextLevelNumber} non débloqué ! Achetez-le dans la boutique.`);
+                quitToMenu();
+            }
         } else {
             // Tous les niveaux terminés
             showCongratulations();
@@ -412,20 +426,21 @@ function calculateRewards(level, stars, time, cheeseCollected, totalCheese) {
         bonus: []
     };
     
-    // Points de base RÉDUITS (environ 50 pièces total)
-    const baseCoinsPerLevel = {
-        1: 10,  // Niveau 1 : 10 pièces par étoile (max 30)
-        2: 12,  // Niveau 2 : 12 pièces par étoile (max 36)
-        3: 15   // Niveau 3 : 15 pièces par étoile (max 45)
-    };
-    const baseCoinsPerStar = baseCoinsPerLevel[level] || 10;
-    rewards.coins = stars * baseCoinsPerStar;
+    // Récompense de base : 20 pièces par niveau complété
+    rewards.coins = 20;
     
-    // Bonus fromage complet (petit bonus)
+    // Bonus étoiles (petit bonus supplémentaire)
+    const starBonus = stars * 5;
+    rewards.coins += starBonus;
+    if (starBonus > 0) {
+        rewards.bonus.push(`⭐ ${stars} étoile${stars > 1 ? 's' : ''} : +${starBonus} pièces`);
+    }
+    
+    // Bonus fromage complet
     if (cheeseCollected === totalCheese) {
-        const cheeseBonus = 5 * level;
+        const cheeseBonus = 10;
         rewards.coins += cheeseBonus;
-        rewards.bonus.push(`🧀 Collectionneur : +${cheeseBonus} pièces`);
+        rewards.bonus.push(`🧀 Tous les fromages : +${cheeseBonus} pièces`);
     }
     
     // Bonus vitesse (petit bonus)
@@ -722,66 +737,64 @@ let isMusicPlaying = false;
 let musicVolume = 0.3; // Volume par défaut (30%)
 let soundEffectsVolume = 0.5; // Volume des effets sonores (50%)
 
-// Effets sonores
+// Effets sonores - Fichiers audio
 const soundEffects = {
     jump: null,
     collect: null,
     death: null,
     victory: null,
-    click: null
+    click: null,
+    attack: null,
+    hit: null
 };
 
+// Charger les fichiers audio
+function loadAudioFiles() {
+    // Son de collecte de fromage (limité à 1.5 seconde)
+    soundEffects.collect = new Audio('sound/miam.wav');
+    soundEffects.collect.volume = soundEffectsVolume;
+    
+    // Son de victoire
+    soundEffects.victory = new Audio('sound/yes.wav');
+    soundEffects.victory.volume = soundEffectsVolume;
+    
+    // Son de mort/dégâts (quand le joueur se fait toucher)
+    soundEffects.death = new Audio('sound/aie.wav');
+    soundEffects.death.volume = soundEffectsVolume;
+    
+    console.log('🔊 Fichiers audio chargés');
+}
+
 function initBackgroundMusic() {
-    // Créer une musique de fond procédurale avec Web Audio API
+    // Utiliser l'audio du fichier mouse.mp4 comme musique de fond
     try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const audioContext = new AudioContext();
+        backgroundMusic = new Audio('videos/mouse.mp4');
+        backgroundMusic.volume = musicVolume;
+        backgroundMusic.loop = true; // Boucle infinie
         
-        // Créer un oscillateur pour la mélodie
-        const createMelodyLoop = () => {
-            if (!isMusicPlaying) return;
-            
-            const now = audioContext.currentTime;
-            const notes = [262, 294, 330, 349, 392, 440, 494, 523]; // Do majeur
-            const melodyPattern = [0, 2, 4, 2, 0, 4, 7, 4]; // Pattern mélodique
-            
-            melodyPattern.forEach((noteIndex, i) => {
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                
-                osc.connect(gain);
-                gain.connect(audioContext.destination);
-                
-                osc.type = 'sine';
-                osc.frequency.value = notes[noteIndex];
-                
-                const startTime = now + i * 0.3;
-                gain.gain.setValueAtTime(musicVolume * 0.1, startTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
-                
-                osc.start(startTime);
-                osc.stop(startTime + 0.3);
-            });
-            
-            setTimeout(createMelodyLoop, 2400);
-        };
+        // Événements pour déboguer
+        backgroundMusic.addEventListener('loadeddata', () => {
+            console.log('✅ Musique chargée avec succès depuis mouse.mp4');
+        });
         
-        backgroundMusic = {
-            context: audioContext,
-            start: createMelodyLoop,
-            stop: () => { isMusicPlaying = false; },
-            volume: musicVolume
-        };
+        backgroundMusic.addEventListener('error', (e) => {
+            console.error('❌ Erreur de chargement de la musique:', e);
+            console.log('Type d\'erreur:', backgroundMusic.error);
+        });
         
-        console.log('🎵 Musique de fond initialisée (Web Audio API)');
+        backgroundMusic.addEventListener('canplay', () => {
+            console.log('✅ Musique prête à être jouée');
+        });
+        
+        console.log('🎵 Musique de fond initialisée depuis mouse.mp4');
     } catch (e) {
-        console.log('⚠️ Erreur initialisation musique:', e);
+        console.log('⚠️ Erreur chargement musique:', e);
         backgroundMusic = null;
     }
 }
 
 function initSoundEffects() {
-    // Sons via Web Audio API (sons synthétisés pour éviter les dépendances externes)
+    // Sons synthétiques via Web Audio API (pour les sons qui n'ont pas de fichier WAV)
     if (!audioContext) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         audioContext = new AudioContext();
@@ -804,64 +817,6 @@ function initSoundEffects() {
         
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.1);
-    };
-    
-    // Son de collecte de fromage (notes joyeuses)
-    soundEffects.collect = () => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // Do
-        oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.05); // Mi
-        oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.1); // Sol
-        
-        gainNode.gain.setValueAtTime(soundEffectsVolume * 0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.15);
-    };
-    
-    // Son de mort (descente dramatique)
-    soundEffects.death = () => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.5);
-        
-        gainNode.gain.setValueAtTime(soundEffectsVolume * 0.4, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.5);
-    };
-    
-    // Son de victoire (mélodie ascendante)
-    soundEffects.victory = () => {
-        const notes = [523, 587, 659, 784, 880]; // Do, Ré, Mi, Sol, La
-        notes.forEach((freq, index) => {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-            
-            const startTime = audioContext.currentTime + (index * 0.1);
-            gainNode.gain.setValueAtTime(soundEffectsVolume * 0.3, startTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
-            
-            oscillator.start(startTime);
-            oscillator.stop(startTime + 0.2);
-        });
     };
     
     // Son de clic (petit bip)
@@ -946,15 +901,47 @@ function initSoundEffects() {
 }
 
 function playSound(soundName) {
-    if (soundEffects[soundName] && typeof soundEffects[soundName] === 'function') {
-        try {
-            soundEffects[soundName]();
-            console.log(`🔊 Son "${soundName}" joué avec succès`);
-        } catch (error) {
-            console.log(`⚠️ Erreur son "${soundName}":`, error);
-        }
-    } else {
+    const sound = soundEffects[soundName];
+    
+    if (!sound) {
         console.log(`⚠️ Son "${soundName}" non trouvé`);
+        return;
+    }
+    
+    try {
+        // Si c'est un objet Audio (fichier WAV)
+        if (sound instanceof Audio) {
+            sound.currentTime = 0; // Recommencer depuis le début
+            sound.volume = soundEffectsVolume;
+            sound.play().catch(err => {
+                console.log(`⚠️ Impossible de jouer "${soundName}":`, err);
+            });
+            
+            // Limiter le son "miam" à 1.5 seconde (juste "oh miam")
+            if (soundName === 'collect') {
+                setTimeout(() => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                }, 1500); // 1.5 seconde
+            }
+            
+            // Limiter le son "aie" à 2 secondes
+            if (soundName === 'death') {
+                setTimeout(() => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                }, 2000); // 2 secondes
+            }
+            
+            console.log(`🔊 Son "${soundName}" joué (fichier audio)`);
+        }
+        // Si c'est une fonction (son synthétique)
+        else if (typeof sound === 'function') {
+            sound();
+            console.log(`🔊 Son "${soundName}" joué (synthétique)`);
+        }
+    } catch (error) {
+        console.log(`⚠️ Erreur son "${soundName}":`, error);
     }
 }
 
@@ -965,19 +952,13 @@ function playBackgroundMusic() {
     
     if (backgroundMusic && !isMusicPlaying) {
         try {
-            // Reprendre le contexte audio si suspendu
-            if (backgroundMusic.context && backgroundMusic.context.state === 'suspended') {
-                backgroundMusic.context.resume().then(() => {
-                    console.log('🎵 AudioContext repris');
-                    isMusicPlaying = true;
-                    backgroundMusic.start();
-                });
-            } else {
+            backgroundMusic.volume = musicVolume;
+            backgroundMusic.play().then(() => {
                 isMusicPlaying = true;
-                backgroundMusic.start();
-            }
-            
-            console.log('🎵 Musique de fond lancée !');
+                console.log('🎵 Musique de fond lancée !');
+            }).catch(error => {
+                console.log('⚠️ Erreur lecture musique:', error);
+            });
         } catch (error) {
             console.log('⚠️ Erreur lecture musique:', error);
         }
@@ -985,12 +966,9 @@ function playBackgroundMusic() {
 }
 
 function pauseBackgroundMusic() {
-    if (isMusicPlaying) {
+    if (backgroundMusic && isMusicPlaying) {
+        backgroundMusic.pause();
         isMusicPlaying = false;
-        if (musicIntervalId) {
-            clearInterval(musicIntervalId);
-            musicIntervalId = null;
-        }
         console.log('⏸️ Musique en pause');
     }
 }
@@ -1152,7 +1130,7 @@ function registerUser() {
         createdAt: new Date().toISOString(),
         playerData: {
             coins: 0,
-            ownedItems: ['level-11'], // Niveau gratuit au départ
+            ownedItems: ['level-1', 'level-2', 'level-3', 'level-11'], // Niveaux 1-3 + niveau gratuit au départ
     currentSkin: 'default'
         }
     };
@@ -1280,7 +1258,16 @@ function loadPlayerDataForCurrentUser() {
     const account = accountsDatabase[currentUser];
     playerData = { ...account.playerData };
     
-    // S'assurer que le niveau gratuit est toujours disponible
+    // S'assurer que les niveaux 1-3 et le niveau gratuit sont toujours disponibles
+    if (!playerData.ownedItems.includes('level-1')) {
+        playerData.ownedItems.push('level-1');
+    }
+    if (!playerData.ownedItems.includes('level-2')) {
+        playerData.ownedItems.push('level-2');
+    }
+    if (!playerData.ownedItems.includes('level-3')) {
+        playerData.ownedItems.push('level-3');
+    }
     if (!playerData.ownedItems.includes('level-11')) {
         playerData.ownedItems.push('level-11');
     }
@@ -1336,7 +1323,7 @@ function checkUserSession() {
 // Charger les données du joueur depuis localStorage
 let playerData = {
     coins: 0,
-    ownedItems: ['level-11'], // Niveau gratuit par défaut
+    ownedItems: ['level-1', 'level-2', 'level-3', 'level-11'], // Niveaux 1-3 + niveau gratuit par défaut
     currentSkin: 'default',
     friends: [],  // Liste d'amis {username, avatar, lastSeen, isOnline}
     friendRequests: {
@@ -1601,6 +1588,9 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Initialiser la musique de fond
     initBackgroundMusic();
+    
+    // Charger les fichiers audio WAV
+    loadAudioFiles();
     
     // Initialiser les effets sonores
     initSoundEffects();
@@ -3554,7 +3544,14 @@ let touchControls = {
     attackProcessed: false,
     // Pour nettoyer les event listeners
     mouseMoveHandler: null,
-    mouseUpHandler: null
+    mouseUpHandler: null,
+    // Suivi des touches activées par les contrôles tactiles (pour ne pas écraser le clavier)
+    touchActiveKeys: {
+        'ArrowLeft': false,
+        'ArrowRight': false,
+        'ArrowUp': false,
+        ' ': false  // Espace pour le saut
+    }
 };
 
 // Initialiser les contrôles tactiles
@@ -3600,8 +3597,8 @@ function initTouchControls() {
     // JOYSTICK - TOUCH (Mobile réel)
     // ============================================
     freshBase.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        // NE PAS faire preventDefault() ici pour éviter l'erreur du navigateur
+        // Le preventDefault sera fait dans touchmove
         touchControls.joystick.active = true;
         freshStick.classList.add('active');
         
@@ -3611,7 +3608,7 @@ function initTouchControls() {
         touchControls.joystick.startY = rect.top + rect.height / 2;
         
         console.log('🕹️ Joystick activé (touch)');
-    }, { passive: false });
+    }, { passive: true });
     
     freshBase.addEventListener('touchmove', (e) => {
         e.preventDefault();
@@ -3641,7 +3638,7 @@ function initTouchControls() {
     }, { passive: false });
     
     const joystickEnd = (e) => {
-        if (e.preventDefault) e.preventDefault();
+        // Pas besoin de preventDefault ici, c'est juste pour nettoyer l'état
         touchControls.joystick.active = false;
         touchControls.joystick.directionX = 0;
         touchControls.joystick.directionY = 0;
@@ -3649,8 +3646,8 @@ function initTouchControls() {
         freshStick.style.transform = 'translate(-50%, -50%)';
     };
     
-    freshBase.addEventListener('touchend', joystickEnd, { passive: false });
-    freshBase.addEventListener('touchcancel', joystickEnd, { passive: false });
+    freshBase.addEventListener('touchend', joystickEnd, { passive: true });
+    freshBase.addEventListener('touchcancel', joystickEnd, { passive: true });
     
     // ============================================
     // JOYSTICK - MOUSE (Mode dev Chrome sur PC)
@@ -3704,7 +3701,10 @@ function initTouchControls() {
     // BOUTON SAUTER - TOUCH (Mobile/Tablette)
     // ============================================
     freshJump.addEventListener('touchstart', (e) => {
-        e.preventDefault();
+        // Empêcher le défilement et le double-tap zoom
+        if (e.cancelable) {
+            e.preventDefault();
+        }
         e.stopPropagation();
         touchControls.jump = true;
         freshJump.style.transform = 'scale(0.85)';
@@ -3712,13 +3712,13 @@ function initTouchControls() {
     }, { passive: false });
     
     const jumpEnd = (e) => {
-        if (e.preventDefault) e.preventDefault();
+        // Pas besoin de preventDefault sur touchend
         touchControls.jump = false;
         freshJump.style.transform = 'scale(1)';
     };
     
-    freshJump.addEventListener('touchend', jumpEnd, { passive: false });
-    freshJump.addEventListener('touchcancel', jumpEnd, { passive: false });
+    freshJump.addEventListener('touchend', jumpEnd, { passive: true });
+    freshJump.addEventListener('touchcancel', jumpEnd, { passive: true });
     
     // ============================================
     // BOUTON SAUTER - MOUSE (PC/Mode dev)
@@ -3738,7 +3738,10 @@ function initTouchControls() {
     // BOUTON ATTAQUER - TOUCH (Mobile/Tablette)
     // ============================================
     freshAttack.addEventListener('touchstart', (e) => {
-        e.preventDefault();
+        // Empêcher le défilement et le double-tap zoom
+        if (e.cancelable) {
+            e.preventDefault();
+        }
         e.stopPropagation();
         touchControls.attack = true;
         freshAttack.style.transform = 'scale(0.85)';
@@ -3746,13 +3749,13 @@ function initTouchControls() {
     }, { passive: false });
     
     const attackEnd = (e) => {
-        if (e.preventDefault) e.preventDefault();
+        // Pas besoin de preventDefault sur touchend
         touchControls.attack = false;
         freshAttack.style.transform = 'scale(1)';
     };
     
-    freshAttack.addEventListener('touchend', attackEnd, { passive: false });
-    freshAttack.addEventListener('touchcancel', attackEnd, { passive: false });
+    freshAttack.addEventListener('touchend', attackEnd, { passive: true });
+    freshAttack.addEventListener('touchcancel', attackEnd, { passive: true });
     
     // ============================================
     // BOUTON ATTAQUER - MOUSE (PC/Mode dev)
@@ -3775,28 +3778,70 @@ function initTouchControls() {
 function updateGameEngineWithTouchControls() {
     if (!gameEngine) return;
     
-    // ⚠️ NE PAS ÉCRASER LES TOUCHES CLAVIER !
-    // On active uniquement, on ne désactive jamais (le clavier s'occupe de ça)
+    // =====================================================
+    // DÉPLACEMENT HORIZONTAL - JOYSTICK
+    // =====================================================
     
-    // Déplacement horizontal depuis le joystick
+    // Vérifier si le joystick est utilisé (au-delà du seuil de sensibilité)
     if (Math.abs(touchControls.joystick.directionX) > 0.2) {
         if (touchControls.joystick.directionX < 0) {
+            // Aller à gauche
             gameEngine.keys['ArrowLeft'] = true;
-            // Ne PAS désactiver ArrowRight (le joueur peut appuyer sur la touche du clavier)
+            touchControls.touchActiveKeys['ArrowLeft'] = true;
+            
+            // Désactiver la droite (seulement si activée par le tactile)
+            if (touchControls.touchActiveKeys['ArrowRight']) {
+                gameEngine.keys['ArrowRight'] = false;
+                touchControls.touchActiveKeys['ArrowRight'] = false;
+            }
         } else {
+            // Aller à droite
             gameEngine.keys['ArrowRight'] = true;
-            // Ne PAS désactiver ArrowLeft
+            touchControls.touchActiveKeys['ArrowRight'] = true;
+            
+            // Désactiver la gauche (seulement si activée par le tactile)
+            if (touchControls.touchActiveKeys['ArrowLeft']) {
+                gameEngine.keys['ArrowLeft'] = false;
+                touchControls.touchActiveKeys['ArrowLeft'] = false;
+            }
+        }
+    } else {
+        // Le joystick est au repos - désactiver UNIQUEMENT les touches activées par le tactile
+        if (touchControls.touchActiveKeys['ArrowLeft']) {
+            gameEngine.keys['ArrowLeft'] = false;
+            touchControls.touchActiveKeys['ArrowLeft'] = false;
+        }
+        if (touchControls.touchActiveKeys['ArrowRight']) {
+            gameEngine.keys['ArrowRight'] = false;
+            touchControls.touchActiveKeys['ArrowRight'] = false;
         }
     }
-    // ⚠️ NE PAS METTRE À FALSE quand le joystick n'est pas actif !
-    // Sinon ça écrase les touches du clavier
     
-    // Saut depuis le bouton
+    // =====================================================
+    // SAUT - BOUTON JUMP
+    // =====================================================
+    
     if (touchControls.jump) {
+        // Activer le saut
         gameEngine.keys['ArrowUp'] = true;
-        gameEngine.keys[' '] = true; // Espace aussi
+        gameEngine.keys[' '] = true;
+        touchControls.touchActiveKeys['ArrowUp'] = true;
+        touchControls.touchActiveKeys[' '] = true;
+    } else {
+        // Désactiver UNIQUEMENT si activé par le tactile
+        if (touchControls.touchActiveKeys['ArrowUp']) {
+            gameEngine.keys['ArrowUp'] = false;
+            touchControls.touchActiveKeys['ArrowUp'] = false;
+        }
+        if (touchControls.touchActiveKeys[' ']) {
+            gameEngine.keys[' '] = false;
+            touchControls.touchActiveKeys[' '] = false;
+        }
     }
-    // ⚠️ NE PAS METTRE À FALSE ici non plus
+    
+    // =====================================================
+    // ATTAQUE - BOUTON ATTACK
+    // =====================================================
     
     // Attaque depuis le bouton (simule un clic sur le canvas)
     if (touchControls.attack && !touchControls.attackProcessed) {

@@ -88,35 +88,39 @@
             <p class="game-creator" data-translate="creator">Créé par CinderYaxley</p>
         </div>
         
-        <div class="menu-buttons">
-            <button class="btn btn-primary" onclick="showPlayerNamePrompt()">
-                <span class="btn-icon">▶</span>
-                JOUER
-            </button>
-            <button class="btn btn-multiplayer" onclick="showMultiplayerScreen()">
-                <span class="btn-icon">⚔️</span>
-                MULTIJOUEUR
-            </button>
-            <button class="btn btn-shop" onclick="showShop()">
-                <span class="btn-icon">🛍️</span>
-                BOUTIQUE
-            </button>
-            <button class="btn btn-skins" onclick="showSkinSelector()">
-                <span class="btn-icon">🎨</span>
-                MES SKINS
-            </button>
-            <button class="btn btn-friends" onclick="showFriendsScreen()">
-                <span class="btn-icon">👥</span>
-                AMIS
-            </button>
-            <button class="btn btn-secondary" onclick="showControls()">
-                <span class="btn-icon">🎮</span>
-                COMMANDES
-            </button>
-            <button class="btn btn-secondary" onclick="showCredits()">
-                <span class="btn-icon">ℹ️</span>
-                À PROPOS
-            </button>
+        <div class="menu-buttons-wrapper">
+            <div class="menu-buttons">
+                <button class="btn btn-primary" onclick="showPlayerNamePrompt()">
+                    <span class="btn-icon">▶</span>
+                    JOUER
+                </button>
+                <button class="btn btn-multiplayer" onclick="showMultiplayerScreen()">
+                    <span class="btn-icon">⚔️</span>
+                    MULTIJOUEUR
+                </button>
+                <button class="btn btn-shop" onclick="showShop()">
+                    <span class="btn-icon">🛍️</span>
+                    BOUTIQUE
+                </button>
+                <button class="btn btn-skins" onclick="showSkinSelector()">
+                    <span class="btn-icon">🎨</span>
+                    MES SKINS
+                </button>
+                <button class="btn btn-friends" onclick="showFriendsScreen()">
+                    <span class="btn-icon">👥</span>
+                    AMIS
+                </button>
+                <button class="btn btn-secondary" onclick="showControls()">
+                    <span class="btn-icon">🎮</span>
+                    COMMANDES
+                </button>
+            </div>
+            <div class="menu-buttons-bottom">
+                <button class="btn btn-secondary" onclick="showCredits()">
+                    <span class="btn-icon">ℹ️</span>
+                    À PROPOS
+                </button>
+            </div>
         </div>
         
         <!-- Affichage des pièces et utilisateur en haut -->
@@ -410,9 +414,22 @@
             <div class="settings-section">
                 <h3 class="settings-section-title">🔊 Audio</h3>
                 
-                <div class="settings-info">
-                    <p style="color: #999; font-style: italic;">Fonctionnalité à venir...</p>
-                    <p style="color: #666; font-size: 0.85rem;">Les effets sonores seront ajoutés prochainement</p>
+                <!-- Volume de la musique -->
+                <div class="setting-item">
+                    <label class="setting-label">🎵 Volume de la musique</label>
+                    <div class="volume-control">
+                        <input type="range" id="musicVolume" min="0" max="100" value="30" class="volume-slider" oninput="updateMusicVolume(this.value)">
+                        <span id="musicVolumeValue" class="volume-value">30%</span>
+                    </div>
+                </div>
+                
+                <!-- Volume des effets sonores -->
+                <div class="setting-item">
+                    <label class="setting-label">🔊 Volume des effets sonores</label>
+                    <div class="volume-control">
+                        <input type="range" id="soundVolume" min="0" max="100" value="50" class="volume-slider" oninput="updateSoundVolume(this.value)">
+                        <span id="soundVolumeValue" class="volume-value">50%</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -630,100 +647,100 @@
         <!-- Skins de souris -->
         <div id="skinsCategory" class="shop-category active">
             <div class="shop-grid">
-                <div class="shop-item" data-item="skin-golden" data-price="500" data-owned="false">
+                <div class="shop-item" data-item="skin-golden" data-price="1500" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-golden"></canvas>
                     <div class="item-name">Souris Dorée</div>
                     <div class="item-desc">⚡ Collecte automatique des fromages proches</div>
-                    <div class="item-price">💰 500</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-golden', 500)">ACHETER</button>
+                    <div class="item-price">💰 1500</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-golden', 1500)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-ninja" data-price="750" data-owned="false">
+                <div class="shop-item" data-item="skin-ninja" data-price="2000" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-ninja"></canvas>
                     <div class="item-name">Souris Ninja</div>
                     <div class="item-desc">⚡ Vitesse +50% + Double saut</div>
-                    <div class="item-price">💰 750</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-ninja', 750)">ACHETER</button>
+                    <div class="item-price">💰 2000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-ninja', 2000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-wizard" data-price="3000" data-owned="false">
+                <div class="shop-item" data-item="skin-wizard" data-price="8000" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-wizard"></canvas>
                     <div class="item-name">Souris Magicien</div>
                     <div class="item-desc">⚡ Téléportation - Cliquez où vous voulez !</div>
-                    <div class="item-price">💰 3000</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-wizard', 3000)">ACHETER</button>
+                    <div class="item-price">💰 8000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-wizard', 8000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-robot" data-price="1200" data-owned="false">
+                <div class="shop-item" data-item="skin-robot" data-price="3000" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-robot"></canvas>
                     <div class="item-name">Souris Robot</div>
                     <div class="item-desc">⚡ Dash rapide (Shift) - Cooldown 2s</div>
-                    <div class="item-price">💰 1200</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-robot', 1200)">ACHETER</button>
+                    <div class="item-price">💰 3000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-robot', 3000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-pirate" data-price="800" data-owned="false">
+                <div class="shop-item" data-item="skin-pirate" data-price="2500" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-pirate"></canvas>
                     <div class="item-name">Souris Pirate</div>
                     <div class="item-desc">⚡ Score x2 sur les fromages</div>
-                    <div class="item-price">💰 800</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-pirate', 800)">ACHETER</button>
+                    <div class="item-price">💰 2500</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-pirate', 2500)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-vampire" data-price="900" data-owned="false">
+                <div class="shop-item" data-item="skin-vampire" data-price="2800" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-vampire"></canvas>
                     <div class="item-name">Souris Vampire</div>
                     <div class="item-desc">⚡ Régénération de vie lente</div>
-                    <div class="item-price">💰 900</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-vampire', 900)">ACHETER</button>
+                    <div class="item-price">💰 2800</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-vampire', 2800)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-knight" data-price="1100" data-owned="false">
+                <div class="shop-item" data-item="skin-knight" data-price="3500" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-knight"></canvas>
                     <div class="item-name">Souris Chevalier</div>
                     <div class="item-desc">⚡ Invincibilité 2s après un dégât</div>
-                    <div class="item-price">💰 1100</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-knight', 1100)">ACHETER</button>
+                    <div class="item-price">💰 3500</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-knight', 3500)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-angel" data-price="1300" data-owned="false">
+                <div class="shop-item" data-item="skin-angel" data-price="4000" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-angel"></canvas>
                     <div class="item-name">Souris Ange</div>
                     <div class="item-desc">⚡ Vol planant + Double saut + Immunité pièges</div>
-                    <div class="item-price">💰 1300</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-angel', 1300)">ACHETER</button>
+                    <div class="item-price">💰 4000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-angel', 4000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-demon" data-price="1400" data-owned="false">
+                <div class="shop-item" data-item="skin-demon" data-price="4500" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-demon"></canvas>
                     <div class="item-name">Souris Démon</div>
                     <div class="item-desc">⚡ Les ennemis vous fuient + Immunité ennemis</div>
-                    <div class="item-price">💰 1400</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-demon', 1400)">ACHETER</button>
+                    <div class="item-price">💰 4500</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-demon', 4500)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-alien" data-price="1600" data-owned="false">
+                <div class="shop-item" data-item="skin-alien" data-price="5000" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-alien"></canvas>
                     <div class="item-name">Souris Alien</div>
                     <div class="item-desc">⚡ Gravité réduite + Double saut</div>
-                    <div class="item-price">💰 1600</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-alien', 1600)">ACHETER</button>
+                    <div class="item-price">💰 5000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-alien', 5000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-rainbow" data-price="2000" data-owned="false">
+                <div class="shop-item" data-item="skin-rainbow" data-price="6000" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-rainbow"></canvas>
                     <div class="item-name">Souris Arc-en-ciel</div>
                     <div class="item-desc">⚡ Bonus aléatoire toutes les 5s</div>
-                    <div class="item-price">💰 2000</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-rainbow', 2000)">ACHETER</button>
+                    <div class="item-price">💰 6000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-rainbow', 6000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="skin-legendary" data-price="5000" data-owned="false">
+                <div class="shop-item" data-item="skin-legendary" data-price="15000" data-owned="false">
                     <canvas class="item-preview" width="160" height="160" data-skin="skin-legendary"></canvas>
                     <div class="item-name">Souris Légendaire</div>
                     <div class="item-desc">⚡ TOUS LES POUVOIRS COMBINÉS !</div>
-                    <div class="item-price">💰 5000</div>
-                    <button class="btn btn-buy" onclick="buyItem('skin-legendary', 5000)">ACHETER</button>
+                    <div class="item-price">💰 15000</div>
+                    <button class="btn btn-buy" onclick="buyItem('skin-legendary', 15000)">ACHETER</button>
                 </div>
             </div>
         </div>
@@ -739,60 +756,60 @@
                     <button class="btn btn-buy" disabled style="background: #4CAF50;">POSSÉDÉ</button>
                 </div>
                 
-                <div class="shop-item" data-item="level-4" data-price="1500" data-owned="false">
+                <div class="shop-item" data-item="level-4" data-price="4000" data-owned="false">
                     <div class="item-icon">🏰</div>
                     <div class="item-name">Le Château Hanté</div>
                     <div class="item-desc">👻 Affrontez les fantômes dans un château mystérieux</div>
-                    <div class="item-price">💰 1500</div>
-                    <button class="btn btn-buy" onclick="buyItem('level-4', 1500)">ACHETER</button>
+                    <div class="item-price">💰 4000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-4', 4000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="level-5" data-price="2000" data-owned="false">
+                <div class="shop-item" data-item="level-5" data-price="5000" data-owned="false">
                     <div class="item-icon">🌋</div>
                     <div class="item-name">La Caverne de Lave</div>
                     <div class="item-desc">🔥 Traversez les flammes et la lave brûlante</div>
-                    <div class="item-price">💰 2000</div>
-                    <button class="btn btn-buy" onclick="buyItem('level-5', 2000)">ACHETER</button>
+                    <div class="item-price">💰 5000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-5', 5000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="level-6" data-price="2500" data-owned="false">
+                <div class="shop-item" data-item="level-6" data-price="6000" data-owned="false">
                     <div class="item-icon">❄️</div>
                     <div class="item-name">Le Temple Glacé</div>
                     <div class="item-desc">🧊 Glissez sur la glace dans un temple gelé</div>
-                    <div class="item-price">💰 2500</div>
-                    <button class="btn btn-buy" onclick="buyItem('level-6', 2500)">ACHETER</button>
+                    <div class="item-price">💰 6000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-6', 6000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="level-7" data-price="3000" data-owned="false">
+                <div class="shop-item" data-item="level-7" data-price="7000" data-owned="false">
                     <div class="item-icon">🌊</div>
                     <div class="item-name">Les Égouts Aquatiques</div>
                     <div class="item-desc">💧 Nagez dans les égouts profonds</div>
-                    <div class="item-price">💰 3000</div>
-                    <button class="btn btn-buy" onclick="buyItem('level-7', 3000)">ACHETER</button>
+                    <div class="item-price">💰 7000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-7', 7000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="level-8" data-price="3500" data-owned="false">
+                <div class="shop-item" data-item="level-8" data-price="8000" data-owned="false">
                     <div class="item-icon">⚡</div>
                     <div class="item-name">La Tour Électrique</div>
                     <div class="item-desc">⚡ Escaladez la tour électrifiée</div>
-                    <div class="item-price">💰 3500</div>
-                    <button class="btn btn-buy" onclick="buyItem('level-8', 3500)">ACHETER</button>
+                    <div class="item-price">💰 8000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-8', 8000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="level-9" data-price="4000" data-owned="false">
+                <div class="shop-item" data-item="level-9" data-price="9000" data-owned="false">
                     <div class="item-icon">🌙</div>
                     <div class="item-name">Le Donjon Nocturne</div>
                     <div class="item-desc">🌙 Explorez le donjon dans l'obscurité</div>
-                    <div class="item-price">💰 4000</div>
-                    <button class="btn btn-buy" onclick="buyItem('level-9', 4000)">ACHETER</button>
+                    <div class="item-price">💰 9000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-9', 9000)">ACHETER</button>
                 </div>
                 
-                <div class="shop-item" data-item="level-10" data-price="5000" data-owned="false">
+                <div class="shop-item" data-item="level-10" data-price="12000" data-owned="false">
                     <div class="item-icon">☠️</div>
                     <div class="item-name">L'Antre du Boss Final</div>
                     <div class="item-desc">💀 Le défi ultime avec le boss final</div>
-                    <div class="item-price">💰 5000</div>
-                    <button class="btn btn-buy" onclick="buyItem('level-10', 5000)">ACHETER</button>
+                    <div class="item-price">💰 12000</div>
+                    <button class="btn btn-buy" onclick="buyItem('level-10', 12000)">ACHETER</button>
                 </div>
             </div>
         </div>

@@ -979,6 +979,38 @@ class GraphicsRenderer {
         }
         
         ctx.restore();
+        
+        // 💚 BARRE DE VIE AU-DESSUS DE L'ENNEMI
+        if (enemy.health !== undefined && enemy.maxHealth !== undefined) {
+            const barWidth = enemy.width * 0.8; // 80% de la largeur de l'ennemi
+            const barHeight = 6;
+            const barX = enemy.x + (enemy.width - barWidth) / 2;
+            const barY = enemy.y - 12; // Au-dessus de l'ennemi
+            
+            // Fond de la barre (gris foncé)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Barre de vie (couleur selon HP)
+            const healthPercent = enemy.health / enemy.maxHealth;
+            const healthWidth = barWidth * healthPercent;
+            
+            // Couleur selon le pourcentage de vie
+            if (healthPercent > 0.6) {
+                ctx.fillStyle = '#00FF00'; // Vert
+            } else if (healthPercent > 0.3) {
+                ctx.fillStyle = '#FFAA00'; // Orange
+            } else {
+                ctx.fillStyle = '#FF0000'; // Rouge
+            }
+            
+            ctx.fillRect(barX, barY, healthWidth, barHeight);
+            
+            // Bordure de la barre
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(barX, barY, barWidth, barHeight);
+        }
         }
     }
     

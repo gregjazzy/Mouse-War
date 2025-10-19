@@ -4,6 +4,7 @@ class GameEngine {
     constructor() {
         this.canvas = null;
         this.ctx = null;
+        // Taille par défaut (sera ajustée dynamiquement)
         this.width = 1280;
         this.height = 720;
         this.tileSize = 60; // Taille par défaut
@@ -95,8 +96,15 @@ class GameEngine {
         console.log('✅ Canvas trouvé:', this.canvas);
         
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
+        
+        // Adapter la taille du canvas à l'écran
+        this.resizeCanvas();
+        
+        // Réécouter les changements de taille d'écran
+        window.addEventListener('resize', () => this.resizeCanvas());
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this.resizeCanvas(), 100);
+        });
         
         // Event listeners
         window.addEventListener('keydown', (e) => this.handleKeyDown(e));
@@ -118,6 +126,49 @@ class GameEngine {
         });
         
         console.log('✅ Écouteurs de clic ajoutés');
+    }
+    
+    resizeCanvas() {
+        // Obtenir les dimensions de la fenêtre
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        // Vérifier si on est sur mobile (largeur < 768px)
+        const isMobile = windowWidth <= 768;
+        
+        if (isMobile) {
+            // Sur mobile : adapter au viewport en mode paysage
+            const isLandscape = windowWidth > windowHeight;
+            
+            if (isLandscape) {
+                // Mode paysage : utiliser toute la largeur disponible
+                this.width = Math.min(windowWidth - 20, 896); // Max 896px en paysage
+                this.height = Math.min(windowHeight - 100, 504); // Garder de la place pour les contrôles
+            } else {
+                // Mode portrait : taille réduite
+                this.width = windowWidth - 20;
+                this.height = Math.min(windowHeight * 0.5, 400);
+            }
+        } else {
+            // Sur desktop/tablette : taille normale
+            this.width = Math.min(windowWidth - 40, 1280);
+            this.height = Math.min(windowHeight - 200, 720);
+        }
+        
+        // Appliquer les dimensions au canvas
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        
+        console.log('📐 Canvas redimensionné:', this.width, 'x', this.height, '| Mobile:', isMobile);
+        
+        // Recalculer les tailles de tiles si un niveau est chargé
+        if (this.levelData && this.levelData.map) {
+            const levelCols = this.levelData.map[0].length;
+            const levelRows = this.levelData.map.length;
+            this.tileSizeX = Math.floor(this.width / levelCols);
+            this.tileSizeY = Math.floor(this.height / levelRows);
+            this.tileSize = this.tileSizeY;
+        }
     }
     
     handleKeyDown(e) {
@@ -207,9 +258,9 @@ class GameEngine {
             
             // Vérifier la collision avec la zone d'attaque
             if (this.checkRectCollision(attackZone, enemy)) {
-                // Jouer le son de coup
+                // Jouer le son "aie" quand on touche un ennemi
                 if (typeof playSound === 'function') {
-                    playSound('hit');
+                    playSound('death');
                 }
                 
                 // 🔧 ENLEVER DES PV AU LIEU DE TUER DIRECTEMENT
@@ -535,6 +586,12 @@ class GameEngine {
                             cheese.collected = true;
                             this.cheeseCollected++;
                             this.score += 100;
+                            
+                            // 🔊 Jouer le son "miam"
+                            if (typeof playSound === 'function') {
+                                playSound('collect');
+                            }
+                            
                             console.log('✨ Golden: Fromage auto-collecté !');
                         }
                     }
@@ -655,6 +712,12 @@ class GameEngine {
                             cheese.collected = true;
                             this.cheeseCollected++;
                             this.score += 200; // Double score du pirate
+                            
+                            // 🔊 Jouer le son "miam"
+                            if (typeof playSound === 'function') {
+                                playSound('collect');
+                            }
+                            
                             console.log('🐉 Dragon Légendaire: Fromage absorbé !');
                         }
                     }
@@ -882,6 +945,11 @@ class GameEngine {
                     cheese.collected = true;
                     this.cheeseCollected++;
                     
+                    // 🔊 Jouer le son "miam"
+                    if (typeof playSound === 'function') {
+                        playSound('collect');
+                    }
+                    
                     // Bonus de score pour skin Pirate (double score)
                     if (player.currentSkin === 'skin-pirate') {
                         this.score += 200;
@@ -1024,6 +1092,11 @@ class GameEngine {
     loseLife() {
         this.lives--;
         
+        // 🔊 Jouer le son "aie"
+        if (typeof playSound === 'function') {
+            playSound('death');
+        }
+        
         if (this.lives <= 0) {
             this.gameOver();
         } else {
@@ -1037,6 +1110,11 @@ class GameEngine {
     
     victory() {
         this.isVictory = true;
+        
+        // 🔊 Jouer le son "yes" (victoire)
+        if (typeof playSound === 'function') {
+            playSound('victory');
+        }
         
         // Calculer le score final
         const timeBonus = Math.max(0, 1000 - this.elapsedTime * 10);

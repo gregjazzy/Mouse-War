@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-transl
     <title>Maze Mouse - Adventure</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -453,13 +453,18 @@
                 <div class="joystick-base">
                     <div class="joystick-stick" id="joystickStick"></div>
                 </div>
+                <div class="joystick-label">DÉPLACER</div>
             </div>
             
             <!-- Boutons d'action -->
             <div class="action-buttons">
-                <button class="btn-jump" id="btnJump">
+                <button class="btn-jump" id="btnJump" type="button">
                     <span class="btn-icon">⬆</span>
                     <span class="btn-label">SAUTER</span>
+                </button>
+                <button class="btn-attack" id="btnAttack" type="button">
+                    <span class="btn-icon">⚔️</span>
+                    <span class="btn-label">ATTAQUER</span>
                 </button>
             </div>
         </div>

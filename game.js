@@ -165,6 +165,9 @@ function backToMenu() {
         gameEngine.isPaused = true;
     }
     
+    // Restaurer l'orientation libre
+    unlockOrientation();
+    
     hideAllScreens();
     
     // Vérifier si l'utilisateur est connecté
@@ -187,6 +190,9 @@ function hideAllScreens() {
 function startGame(levelNumber) {
     hideAllScreens();
     document.getElementById('gameScreen').classList.add('active');
+    
+    // Forcer l'orientation paysage sur mobile
+    forceLandscapeOrientation();
     
     // Initialiser le nom du joueur
     const playerNameEl = document.getElementById('playerName');
@@ -313,6 +319,9 @@ function quitToMenu() {
         cancelAnimationFrame(animationId);
         animationId = null;
     }
+    
+    // Restaurer l'orientation libre
+    unlockOrientation();
     
     // Réinitialiser le moteur
     if (gameEngine) {
@@ -3510,31 +3519,44 @@ let touchControls = {
         directionX: 0,
         directionY: 0
     },
-    jump: false
+    jump: false,
+    attack: false,
+    attackProcessed: false
 };
 
 // Initialiser les contrôles tactiles
 function initTouchControls() {
+    const joystickBase = document.querySelector('.joystick-base');
     const joystickStick = document.getElementById('joystickStick');
     const btnJump = document.getElementById('btnJump');
+    const btnAttack = document.getElementById('btnAttack');
     
-    if (!joystickStick || !btnJump) return;
+    if (!joystickStick || !btnJump || !btnAttack || !joystickBase) {
+        console.log('❌ Contrôles tactiles non trouvés');
+        return;
+    }
     
-    // Joystick - Touch Start
-    joystickStick.addEventListener('touchstart', (e) => {
+    console.log('✅ Contrôles tactiles initialisés');
+    
+    // Joystick - Touch Start (sur la base entière)
+    joystickBase.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         touchControls.joystick.active = true;
         joystickStick.classList.add('active');
         
         const touch = e.touches[0];
-        const rect = joystickStick.parentElement.getBoundingClientRect();
+        const rect = joystickBase.getBoundingClientRect();
         touchControls.joystick.startX = rect.left + rect.width / 2;
         touchControls.joystick.startY = rect.top + rect.height / 2;
+        
+        console.log('🕹️ Joystick activé');
     });
     
-    // Joystick - Touch Move
-    joystickStick.addEventListener('touchmove', (e) => {
+    // Joystick - Touch Move (sur la base)
+    joystickBase.addEventListener('touchmove', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         if (!touchControls.joystick.active) return;
         
         const touch = e.touches[0];
@@ -3591,6 +3613,29 @@ function initTouchControls() {
     
     btnJump.addEventListener('touchend', jumpEnd);
     btnJump.addEventListener('touchcancel', jumpEnd);
+    
+    // Bouton Attaquer - Touch Start
+    btnAttack.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        touchControls.attack = true;
+        btnAttack.style.transform = 'scale(0.85)';
+        console.log('⚔️ Attaque activée');
+    });
+    
+    // Bouton Attaquer - Touch End
+    const attackEnd = (e) => {
+        e.preventDefault();
+        touchControls.attack = false;
+        btnAttack.style.transform = 'scale(1)';
+    };
+    
+    btnAttack.addEventListener('touchend', attackEnd);
+    btnAttack.addEventListener('touchcancel', attackEnd);
+    
+    // Touch end sur la base aussi
+    joystickBase.addEventListener('touchend', joystickEnd);
+    joystickBase.addEventListener('touchcancel', joystickEnd);
 }
 
 // Mettre à jour les contrôles du moteur de jeu avec les contrôles tactiles
@@ -3621,6 +3666,23 @@ function updateGameEngineWithTouchControls() {
         gameEngine.keys.up = false;
         gameEngine.keys.space = false;
     }
+    
+    // Attaque depuis le bouton (simule un clic sur le canvas)
+    if (touchControls.attack && !touchControls.attackProcessed) {
+        touchControls.attackProcessed = true;
+        // Simuler un clic au centre du canvas pour l'attaque
+        if (gameEngine.canvas) {
+            const rect = gameEngine.canvas.getBoundingClientRect();
+            const clickEvent = new MouseEvent('click', {
+                clientX: rect.left + rect.width / 2,
+                clientY: rect.top + rect.height / 2,
+                bubbles: true
+            });
+            gameEngine.canvas.dispatchEvent(clickEvent);
+        }
+    } else if (!touchControls.attack) {
+        touchControls.attackProcessed = false;
+    }
 }
 
 // Modifier la boucle de jeu pour inclure les contrôles tactiles
@@ -3646,5 +3708,81 @@ const originalGameLoop = function gameLoop(timestamp) {
 window.addEventListener('DOMContentLoaded', () => {
     initTouchControls();
 });
+
+// ================================
+// GESTION DE L'ORIENTATION ÉCRAN
+// ================================
+
+// Forcer l'orientation paysage sur mobile
+function forceLandscapeOrientation() {
+    // Vérifier si on est sur mobile/tablette
+    if (window.screen && window.screen.orientation) {
+        try {
+            // Tenter de verrouiller en mode paysage
+            window.screen.orientation.lock('landscape').then(() => {
+                console.log('📱 Orientation verrouillée en paysage');
+            }).catch((err) => {
+                console.log('⚠️ Impossible de verrouiller l\'orientation:', err.message);
+                // Fallback: demander à l'utilisateur de tourner
+                showOrientationHint();
+            });
+        } catch (err) {
+            console.log('⚠️ API Orientation non supportée');
+        }
+    }
+}
+
+// Déverrouiller l'orientation
+function unlockOrientation() {
+    if (window.screen && window.screen.orientation) {
+        try {
+            window.screen.orientation.unlock();
+            console.log('📱 Orientation déverrouillée');
+        } catch (err) {
+            console.log('⚠️ Erreur déverrouillage orientation:', err);
+        }
+    }
+}
+
+// Afficher un hint temporaire si nécessaire
+function showOrientationHint() {
+    // Créer un hint temporaire si on est en portrait
+    if (window.innerHeight > window.innerWidth) {
+        const hint = document.createElement('div');
+        hint.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 10001;
+            font-size: 1.2rem;
+            animation: fadeIn 0.3s ease;
+        `;
+        hint.innerHTML = '🔄<br>Tournez votre appareil<br>en mode paysage';
+        document.body.appendChild(hint);
+        
+        // Retirer le hint quand on tourne
+        const checkOrientation = () => {
+            if (window.innerWidth > window.innerHeight) {
+                hint.remove();
+                window.removeEventListener('resize', checkOrientation);
+            }
+        };
+        window.addEventListener('resize', checkOrientation);
+        
+        // Auto-retirer après 5 secondes
+        setTimeout(() => {
+            if (hint.parentElement) {
+                hint.remove();
+            }
+            window.removeEventListener('resize', checkOrientation);
+        }, 5000);
+    }
+}
 
 

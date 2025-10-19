@@ -4,8 +4,11 @@ let gameEngine = null;
 let lastTimestamp = 0;
 let animationId = null;
 
+// ============ EXPOSER LES FONCTIONS GLOBALEMENT ============
+// Ces fonctions doivent être accessibles depuis les attributs onclick du HTML
+
 // Navigation des menus
-function showLevelSelect() {
+window.showLevelSelect = function() {
     hideAllScreens();
     document.getElementById('levelSelect').classList.add('active');
     loadAvailableModes(); // Charger les modes achetés
@@ -69,7 +72,7 @@ function loadAvailableModes() {
 }
 
 // Afficher le sélecteur de mode en jeu
-function showModeSwitcher() {
+window.showModeSwitcher = function() {
     if (gameEngine) {
         gameEngine.isPaused = true;
     }
@@ -134,7 +137,7 @@ function showModeSwitcher() {
 }
 
 // Fermer le sélecteur de mode
-function closeModeSwitcher() {
+window.closeModeSwitcher = function() {
     document.getElementById('modeSwitcher').style.display = 'none';
     if (gameEngine) {
         gameEngine.isPaused = false;
@@ -142,23 +145,24 @@ function closeModeSwitcher() {
 }
 
 // Changer de mode en cours de jeu
-function switchToMode(levelNumber) {
+window.switchToMode = function(levelNumber) {
     closeModeSwitcher();
     // Conserver la difficulté actuelle lors du changement de mode
     const currentDifficulty = gameEngine ? (gameEngine.difficulty || 'medium') : 'medium';
     startGame(levelNumber, currentDifficulty);
 }
 
-function showControls() {
+window.showControls = function() {
     hideAllScreens();
     document.getElementById('controlsScreen').classList.add('active');
 }
 
-function showCredits() {
-    alert('🐭 MAZE MOUSE\n\n✨ Créé par CinderYaxley ✨\n\nUn jeu d\'aventure premium\n\nDéveloppé avec ❤️ en JavaScript\n\nGraphismes et animations de qualité Nintendo Switch\n\n© 2024');
+window.showCredits = function() {
+    hideAllScreens();
+    document.getElementById('creditsScreen').classList.add('active');
 }
 
-function backToMenu() {
+window.backToMenu = function() {
     // Réinitialiser l'état du jeu si on était en jeu
     if (gameEngine) {
         gameEngine.isPaused = true;
@@ -186,19 +190,22 @@ function hideAllScreens() {
 }
 
 // Démarrer une partie
-function startGame(levelNumber, difficulty = 'medium') {
+window.startGame = function(levelNumber, difficulty = 'medium') {
     hideAllScreens();
     document.getElementById('gameScreen').classList.add('active');
     
     // Forcer l'affichage des contrôles mobiles sur les appareils tactiles
     const mobileControls = document.getElementById('mobileControls');
     if (mobileControls) {
-        // Détecter si c'est un appareil tactile
+        // Détecter si c'est un VRAI appareil tactile (pas juste un petit écran)
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        const isSmallScreen = window.innerWidth <= 1024;
         
-        if (isTouchDevice || isSmallScreen) {
+        // Ne forcer l'affichage QUE si c'est un vrai appareil tactile
+        if (isTouchDevice) {
             mobileControls.style.display = 'block';
+        } else {
+            // Sur PC, toujours cacher les contrôles tactiles
+            mobileControls.style.display = 'none';
         }
     }
     
@@ -286,38 +293,22 @@ function startGame(levelNumber, difficulty = 'medium') {
     }, 100);
 }
 
-// Boucle de jeu principale
-function gameLoop(timestamp = 0) {
-    const deltaTime = timestamp - lastTimestamp;
-    lastTimestamp = timestamp;
-    
-    if (gameEngine) {
-        // Mettre à jour les contrôles tactiles
-        updateGameEngineWithTouchControls();
-        
-        gameEngine.update(deltaTime);
-        gameEngine.render();
-    }
-    
-    animationId = requestAnimationFrame(gameLoop);
-}
-
 // Contrôles de jeu
-function pauseGame() {
+window.pauseGame = function() {
     if (!gameEngine) return;
     
     gameEngine.isPaused = true;
     document.getElementById('pauseMenu').classList.add('active');
 }
 
-function resumeGame() {
+window.resumeGame = function() {
     if (!gameEngine) return;
     
     gameEngine.isPaused = false;
     document.getElementById('pauseMenu').classList.remove('active');
 }
 
-function restartLevel() {
+window.restartLevel = function() {
     document.getElementById('pauseMenu').classList.remove('active');
     document.getElementById('gameOverScreen').classList.remove('active');
     document.getElementById('victoryScreen').classList.remove('active');
@@ -329,7 +320,7 @@ function restartLevel() {
     }
 }
 
-function nextLevel() {
+window.nextLevel = function() {
     document.getElementById('victoryScreen').classList.remove('active');
     
     if (gameEngine) {
@@ -355,7 +346,7 @@ function nextLevel() {
     }
 }
 
-function quitToMenu() {
+window.quitToMenu = function() {
     // Arrêter la boucle de jeu
     if (animationId) {
         cancelAnimationFrame(animationId);
@@ -629,7 +620,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 // Fonction pour basculer en plein écran
-function toggleFullscreen() {
+window.toggleFullscreen = function() {
     if (!document.fullscreenElement) {
         // Entrer en plein écran
         document.documentElement.requestFullscreen().catch(err => {
@@ -711,6 +702,37 @@ document.addEventListener('visibilitychange', () => {
 });
 
 
+// ============ EXPOSER LES AUTRES FONCTIONS PRINCIPALES ============
+// Ces fonctions sont appelées depuis le HTML et doivent être globales
+
+window.showShop = showShop;
+window.showSkinSelector = showSkinSelector;
+window.showMultiplayerScreen = showMultiplayerScreen;
+window.showFriendsScreen = showFriendsScreen;
+window.showPlayerNamePrompt = showPlayerNamePrompt;
+window.toggleUserMenu = toggleUserMenu;
+window.showSettings = showSettings;
+window.showAddAccount = showAddAccount;
+window.buyItem = buyItem;
+window.showCategory = showCategory;
+window.searchFriend = searchFriend;
+window.switchFriendsTab = switchFriendsTab;
+window.closeSearchResults = closeSearchResults;
+window.selectTeam = selectTeam;
+window.refreshServers = refreshServers;
+window.toggleChat = toggleChat;
+window.sendChatMessage = sendChatMessage;
+window.togglePlayersList = togglePlayersList;
+window.pauseMultiplayerGame = pauseMultiplayerGame;
+window.resumeMultiplayerGame = resumeMultiplayerGame;
+window.quitMultiplayerGame = quitMultiplayerGame;
+window.remapKey = remapKey;
+window.resetDefaultKeys = resetDefaultKeys;
+window.updateMusicVolume = updateMusicVolume;
+window.updateSoundVolume = updateSoundVolume;
+window.changeLanguage = changeLanguage;
+window.showLoginFromMenu = showLoginFromMenu;
+
 // ============ SYSTÈME DE GESTION DES COMPTES ============
 
 // Musique de fond
@@ -718,6 +740,7 @@ let backgroundMusic = null;
 let isMusicPlaying = false;
 let musicVolume = 0.3; // Volume par défaut (30%)
 let soundEffectsVolume = 0.5; // Volume des effets sonores (50%)
+let audioContext = null; // Contexte Web Audio API
 
 // Effets sonores - Fichiers audio
 const soundEffects = {
@@ -1022,7 +1045,7 @@ function saveAccountsDatabase() {
 }
 
 // Afficher le formulaire de connexion
-function showLoginForm() {
+window.showLoginForm = function() {
     document.getElementById('loginForm').classList.add('active');
     document.getElementById('registerForm').classList.remove('active');
     document.getElementById('loginError').textContent = '';
@@ -1030,7 +1053,7 @@ function showLoginForm() {
 }
 
 // Afficher le formulaire d'inscription
-function showRegisterForm() {
+window.showRegisterForm = function() {
     document.getElementById('registerForm').classList.add('active');
     document.getElementById('loginForm').classList.remove('active');
     document.getElementById('loginError').textContent = '';
@@ -1050,7 +1073,7 @@ function hashPassword(password) {
 }
 
 // Créer un nouveau compte
-function registerUser() {
+window.registerUser = function() {
     const username = document.getElementById('registerUsername').value.trim();
     const password = document.getElementById('registerPassword').value;
     const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
@@ -1113,7 +1136,7 @@ function registerUser() {
 }
 
 // Se connecter
-function loginUser() {
+window.loginUser = function() {
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
     const errorEl = document.getElementById('loginError');
@@ -1148,7 +1171,7 @@ function loginUser() {
 }
 
 // Se déconnecter
-function logoutUser() {
+window.logoutUser = function() {
     if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
         // Sauvegarder les données du joueur actuel avant de se déconnecter
         if (currentUser) {
@@ -1664,6 +1687,23 @@ function setupFormHandlers() {
             });
         }
     });
+    
+    // Ajouter gestionnaires tactiles pour les boutons sur mobile
+    const loginBtn = document.querySelector('#loginForm .btn-primary');
+    if (loginBtn) {
+        loginBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            loginUser();
+        }, { passive: false });
+    }
+    
+    const registerBtn = document.querySelector('#registerForm .btn-primary');
+    if (registerBtn) {
+        registerBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            registerUser();
+        }, { passive: false });
+    }
 }
 
 // ============ MENU DÉROULANT UTILISATEUR ============
@@ -3817,7 +3857,6 @@ const gameLoop = function(timestamp) {
     if (!gameEngine.isPaused) {
         gameEngine.update(deltaTime);
         gameEngine.render();
-        updateHUD();
         
         // Dessiner les autres joueurs en multijoueur
         if (multiplayerClient && multiplayerClient.isConnected && gameEngine && gameEngine.ctx) {
@@ -3946,11 +3985,15 @@ function startMultiplayerGame(team) {
     // Forcer l'affichage des contrôles mobiles sur les appareils tactiles
     const mobileControls = document.getElementById('mobileControls');
     if (mobileControls) {
+        // Détecter si c'est un VRAI appareil tactile (pas juste un petit écran)
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        const isSmallScreen = window.innerWidth <= 1024;
         
-        if (isTouchDevice || isSmallScreen) {
+        // Ne forcer l'affichage QUE si c'est un vrai appareil tactile
+        if (isTouchDevice) {
             mobileControls.style.display = 'block';
+        } else {
+            // Sur PC, toujours cacher les contrôles tactiles
+            mobileControls.style.display = 'none';
         }
     }
     

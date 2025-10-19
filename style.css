@@ -3979,21 +3979,7 @@ body {
     z-index: 9999; /* ✅ Au-dessus du canvas */
 }
 
-/* Afficher sur TOUS les petits écrans (mobile + mode dev Chrome) */
-@media (max-width: 768px) {
-    .mobile-controls {
-        display: block !important;
-    }
-}
-
-/* Afficher sur tablettes en paysage */
-@media (max-width: 1024px) and (max-height: 768px) {
-    .mobile-controls {
-        display: block !important;
-    }
-}
-
-/* Afficher aussi sur écrans tactiles peu importe la taille */
+/* Afficher UNIQUEMENT sur appareils tactiles */
 @media (hover: none) and (pointer: coarse) {
     .mobile-controls {
         display: block !important;

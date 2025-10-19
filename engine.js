@@ -170,6 +170,11 @@ class GameEngine {
     handleKeyDown(e) {
         this.keys[e.key] = true;
         
+        // Debug temporaire
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', ' '].includes(e.key)) {
+            console.log('Touche détectée:', e.key, 'Keys:', this.keys);
+        }
+        
         if (e.key === 'Escape') {
             pauseGame();
         }

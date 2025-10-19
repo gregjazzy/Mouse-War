@@ -3805,7 +3805,7 @@ function updateGameEngineWithTouchControls() {
 }
 
 // Modifier la boucle de jeu pour inclure les contrôles tactiles
-const originalGameLoop = function gameLoop(timestamp) {
+const gameLoop = function(timestamp) {
     if (!gameEngine) return;
     
     const deltaTime = timestamp - lastTimestamp;
@@ -3818,10 +3818,18 @@ const originalGameLoop = function gameLoop(timestamp) {
         gameEngine.update(deltaTime);
         gameEngine.render();
         updateHUD();
+        
+        // Dessiner les autres joueurs en multijoueur
+        if (multiplayerClient && multiplayerClient.isConnected && gameEngine && gameEngine.ctx) {
+            multiplayerClient.drawOtherPlayers(gameEngine.ctx, gameEngine.camera);
+        }
     }
     
     animationId = requestAnimationFrame(gameLoop);
 };
+
+// Exposer gameLoop globalement
+window.gameLoop = gameLoop;
 
 // Initialiser les contrôles tactiles au chargement
 window.addEventListener('DOMContentLoaded', () => {
@@ -4041,19 +4049,6 @@ function disconnectMultiplayer() {
         multiplayerClient.disconnect();
         multiplayerClient = null;
     }
-}
-
-// Modifier la boucle de jeu pour dessiner les autres joueurs
-const originalGameLoop = window.gameLoop;
-if (originalGameLoop) {
-    window.gameLoop = function(timestamp) {
-        originalGameLoop(timestamp);
-        
-        // Dessiner les autres joueurs en multijoueur
-        if (multiplayerClient && multiplayerClient.isConnected && gameEngine && gameEngine.ctx) {
-            multiplayerClient.drawOtherPlayers(gameEngine.ctx, gameEngine.camera);
-        }
-    };
 }
 
 

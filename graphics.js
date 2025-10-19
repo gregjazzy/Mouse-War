@@ -160,7 +160,6 @@ class GraphicsRenderer {
         
         // ===== SI SKIN LÉGENDAIRE = DRAGON ROUGE ÉLÉMENTAIRE =====
         if (currentSkin === 'skin-legendary') {
-            console.log('🐉 DESSIN DU DRAGON LÉGENDAIRE !');
             
             // Ombre du dragon
             ctx.fillStyle = 'rgba(139, 0, 0, 0.5)';
@@ -1911,7 +1910,7 @@ class GraphicsRenderer {
     // Dessiner un effet spécial selon le skin
     drawSkinEffect(ctx, size, skinId, walkCycle) {
         if (skinId === 'skin-legendary') {
-        // Aura SANS particules jaunes pour éviter le bug du point jaune
+        // Aura légendaire dorée
         const auraGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 1.2);
         auraGradient.addColorStop(0, 'rgba(255, 215, 0, 0.3)');
         auraGradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.15)');

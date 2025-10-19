@@ -187,15 +187,6 @@ maze-mouse/
 - **Halos** sur le feu
 - **Portail lumineux** à la sortie
 
-## 🐛 Debug et Développement
-
-### Touches de Debug (avec CTRL)
-- `CTRL + V` : Forcer la victoire
-- `CTRL + L` : Passer au niveau suivant
-
-### Console
-Le jeu affiche des informations utiles dans la console du navigateur.
-
 ## 🔧 Personnalisation
 
 ### Modifier les Couleurs

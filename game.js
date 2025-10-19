@@ -20,7 +20,6 @@ function loadAvailableModes() {
     
     const ownedLevels = playerData.ownedItems.filter(item => item.startsWith('level-'));
     
-    console.log('🎮 Niveaux possédés:', ownedLevels);
     
     // Définir les modes disponibles
     const modesData = {
@@ -40,7 +39,6 @@ function loadAvailableModes() {
             const modeData = modesData[levelId];
             const levelNumber = parseInt(levelId.split('-')[1]);
             
-            console.log('➕ Ajout du mode:', modeData.name, 'niveau', levelNumber);
             
             const modeCard = document.createElement('div');
             modeCard.className = 'mode-card';
@@ -68,7 +66,6 @@ function loadAvailableModes() {
         }
     });
     
-    console.log('✅ Modes chargés, total:', ownedLevels.length);
 }
 
 // Afficher le sélecteur de mode en jeu
@@ -147,7 +144,9 @@ function closeModeSwitcher() {
 // Changer de mode en cours de jeu
 function switchToMode(levelNumber) {
     closeModeSwitcher();
-    startGame(levelNumber);
+    // Conserver la difficulté actuelle lors du changement de mode
+    const currentDifficulty = gameEngine ? (gameEngine.difficulty || 'medium') : 'medium';
+    startGame(levelNumber, currentDifficulty);
 }
 
 function showControls() {
@@ -191,13 +190,24 @@ function startGame(levelNumber, difficulty = 'medium') {
     hideAllScreens();
     document.getElementById('gameScreen').classList.add('active');
     
+    // Forcer l'affichage des contrôles mobiles sur les appareils tactiles
+    const mobileControls = document.getElementById('mobileControls');
+    if (mobileControls) {
+        // Détecter si c'est un appareil tactile
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const isSmallScreen = window.innerWidth <= 1024;
+        
+        if (isTouchDevice || isSmallScreen) {
+            mobileControls.style.display = 'block';
+        }
+    }
+    
     // Forcer l'orientation paysage sur mobile
     forceLandscapeOrientation();
     
     // 🔧 RÉINITIALISER les contrôles tactiles APRÈS le changement d'orientation
     setTimeout(() => {
         initTouchControls();
-        console.log('🎮 Contrôles tactiles réinitialisés après orientation');
     }, 300); // Délai pour laisser l'orientation se stabiliser
     
     // Initialiser le nom du joueur
@@ -212,7 +222,6 @@ function startGame(levelNumber, difficulty = 'medium') {
     
     // 🔧 APPLIQUER LA DIFFICULTÉ
     gameEngine.difficulty = difficulty;
-    console.log('🎯 Difficulté sélectionnée:', difficulty);
     
     // Ajuster les vies selon la difficulté
     let maxLives = 3; // Par défaut
@@ -238,20 +247,15 @@ function startGame(levelNumber, difficulty = 'medium') {
     updateHealthBar(gameEngine.lives, maxLives);
     
     // ✅ CHARGER LE SKIN ÉQUIPÉ DU JOUEUR
-    console.log('🎮 Démarrage du jeu - currentUser:', currentUser);
-    console.log('🎮 accountsDatabase:', accountsDatabase);
     
     if (currentUser && accountsDatabase[currentUser]) {
         const currentSkin = accountsDatabase[currentUser].playerData.currentSkin || 'default';
         gameEngine.player.currentSkin = currentSkin;
         // Ajouter le nom d'utilisateur au joueur
         gameEngine.player.username = currentUser;
-        console.log('🎨 Skin chargé pour le jeu:', currentSkin);
-        console.log('🎨 gameEngine.player.currentSkin:', gameEngine.player.currentSkin);
     } else {
         gameEngine.player.currentSkin = 'default';
         gameEngine.player.username = playerName || 'Joueur';
-        console.log('⚠️ Pas d\'utilisateur connecté, skin par défaut');
     }
     
     gameEngine.loadLevel(levelNumber);
@@ -261,11 +265,9 @@ function startGame(levelNumber, difficulty = 'medium') {
     gameEngine.isVictory = false;
     
     // 🔧 VÉRIFIER QUE L'ÉCOUTEUR DE CLIC EST BIEN ACTIF
-    console.log('🖱️ Canvas pour attaque:', gameEngine.canvas ? 'OK' : 'ERREUR');
     
     // Initialiser les contrôles tactiles APRÈS un délai
     setTimeout(() => {
-        console.log('🎮 Initialisation différée des contrôles tactiles...');
         initTouchControls();
     }, 500);
     
@@ -280,7 +282,6 @@ function startGame(levelNumber, difficulty = 'medium') {
     setTimeout(() => {
         if (gameEngine) {
             updateHealthBar(gameEngine.lives, gameEngine.maxLives);
-            console.log('❤️ Vies après initialisation:', gameEngine.lives, '/', gameEngine.maxLives);
         }
     }, 100);
 }
@@ -323,7 +324,8 @@ function restartLevel() {
     
     if (gameEngine) {
         const currentLevel = gameEngine.currentLevel;
-        startGame(currentLevel);
+        const currentDifficulty = gameEngine.difficulty || 'medium';
+        startGame(currentLevel, currentDifficulty);
     }
 }
 
@@ -332,21 +334,17 @@ function nextLevel() {
     
     if (gameEngine) {
         const nextLevelNumber = gameEngine.currentLevel + 1;
+        const currentDifficulty = gameEngine.difficulty || 'medium';
         const totalLevels = getTotalLevels();
         
-        console.log('🎮 Niveau actuel:', gameEngine.currentLevel);
-        console.log('🎮 Prochain niveau:', nextLevelNumber);
-        console.log('🎮 Total niveaux:', totalLevels);
-        console.log('🎮 Niveaux possédés:', playerData.ownedItems);
         
         if (nextLevelNumber <= totalLevels) {
             // Vérifier si le joueur possède le niveau suivant
             const levelId = `level-${nextLevelNumber}`;
             if (playerData.ownedItems.includes(levelId)) {
-                startGame(nextLevelNumber);
+                startGame(nextLevelNumber, currentDifficulty);
             } else {
                 // Le joueur n'a pas acheté ce niveau
-                console.log('⚠️ Niveau non possédé:', levelId);
                 alert(`Niveau ${nextLevelNumber} non débloqué ! Achetez-le dans la boutique.`);
                 quitToMenu();
             }
@@ -635,7 +633,6 @@ function toggleFullscreen() {
     if (!document.fullscreenElement) {
         // Entrer en plein écran
         document.documentElement.requestFullscreen().catch(err => {
-            console.log('Erreur plein écran:', err);
         });
     } else {
         // Sortir du plein écran
@@ -713,21 +710,6 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Debug: Touches pour tester rapidement
-window.addEventListener('keydown', (e) => {
-    // Touche 'V' pour victoire (debug)
-    if (e.key === 'v' && e.ctrlKey && gameEngine) {
-        gameEngine.victory();
-    }
-    
-    // Touche 'L' pour passer au niveau suivant (debug)
-    if (e.key === 'l' && e.ctrlKey && gameEngine) {
-        const nextLevelNumber = gameEngine.currentLevel + 1;
-        if (nextLevelNumber <= getTotalLevels()) {
-            startGame(nextLevelNumber);
-        }
-    }
-});
 
 // ============ SYSTÈME DE GESTION DES COMPTES ============
 
@@ -762,7 +744,6 @@ function loadAudioFiles() {
     soundEffects.death = new Audio('sound/aie.wav');
     soundEffects.death.volume = soundEffectsVolume;
     
-    console.log('🔊 Fichiers audio chargés');
 }
 
 function initBackgroundMusic() {
@@ -774,21 +755,15 @@ function initBackgroundMusic() {
         
         // Événements pour déboguer
         backgroundMusic.addEventListener('loadeddata', () => {
-            console.log('✅ Musique chargée avec succès depuis mouse.mp4');
         });
         
         backgroundMusic.addEventListener('error', (e) => {
-            console.error('❌ Erreur de chargement de la musique:', e);
-            console.log('Type d\'erreur:', backgroundMusic.error);
         });
         
         backgroundMusic.addEventListener('canplay', () => {
-            console.log('✅ Musique prête à être jouée');
         });
         
-        console.log('🎵 Musique de fond initialisée depuis mouse.mp4');
     } catch (e) {
-        console.log('⚠️ Erreur chargement musique:', e);
         backgroundMusic = null;
     }
 }
@@ -895,16 +870,13 @@ function initSoundEffects() {
         oscillator.stop(audioContext.currentTime + 0.08);
     };
     
-    console.log('✅ Effets sonores initialisés (attack, hit ajoutés)');
     
-    console.log('🔊 Effets sonores initialisés');
 }
 
 function playSound(soundName) {
     const sound = soundEffects[soundName];
     
     if (!sound) {
-        console.log(`⚠️ Son "${soundName}" non trouvé`);
         return;
     }
     
@@ -914,7 +886,6 @@ function playSound(soundName) {
             sound.currentTime = 0; // Recommencer depuis le début
             sound.volume = soundEffectsVolume;
             sound.play().catch(err => {
-                console.log(`⚠️ Impossible de jouer "${soundName}":`, err);
             });
             
             // Limiter le son "miam" à 1.5 seconde (juste "oh miam")
@@ -933,15 +904,12 @@ function playSound(soundName) {
                 }, 2000); // 2 secondes
             }
             
-            console.log(`🔊 Son "${soundName}" joué (fichier audio)`);
         }
         // Si c'est une fonction (son synthétique)
         else if (typeof sound === 'function') {
             sound();
-            console.log(`🔊 Son "${soundName}" joué (synthétique)`);
         }
     } catch (error) {
-        console.log(`⚠️ Erreur son "${soundName}":`, error);
     }
 }
 
@@ -955,12 +923,9 @@ function playBackgroundMusic() {
             backgroundMusic.volume = musicVolume;
             backgroundMusic.play().then(() => {
                 isMusicPlaying = true;
-                console.log('🎵 Musique de fond lancée !');
             }).catch(error => {
-                console.log('⚠️ Erreur lecture musique:', error);
             });
         } catch (error) {
-            console.log('⚠️ Erreur lecture musique:', error);
         }
     }
 }
@@ -969,12 +934,10 @@ function pauseBackgroundMusic() {
     if (backgroundMusic && isMusicPlaying) {
         backgroundMusic.pause();
         isMusicPlaying = false;
-        console.log('⏸️ Musique en pause');
     }
 }
 
 function toggleBackgroundMusic() {
-    console.log('🎵 Toggle musique - État actuel:', isMusicPlaying);
     if (isMusicPlaying) {
         pauseBackgroundMusic();
         document.getElementById('musicToggleText').textContent = '🔇 Musique OFF';
@@ -988,7 +951,6 @@ function toggleBackgroundMusic() {
 function setMusicVolume(volume) {
     musicVolume = Math.max(0, Math.min(1, volume)); // Entre 0 et 1
     localStorage.setItem('mazeMouse_musicVolume', musicVolume);
-    console.log('🔊 Volume musique:', musicVolume);
 }
 
 function setSoundEffectsVolume(volume) {
@@ -1165,19 +1127,16 @@ function loginUser() {
     // Vérifier les identifiants
     const userKey = username.toLowerCase();
     
-    // DEBUG: Afficher les comptes disponibles si le compte n'existe pas
     if (!accountsDatabase[userKey]) {
-        const availableAccounts = Object.keys(accountsDatabase);
-        errorEl.innerHTML = `❌ Nom d'utilisateur incorrect<br><small>DEBUG: Comptes disponibles: ${availableAccounts.length > 0 ? availableAccounts.join(', ') : 'Aucun compte créé'}</small>`;
+        errorEl.textContent = '❌ Nom d\'utilisateur incorrect';
         return;
     }
     
     const account = accountsDatabase[userKey];
     const hashedPassword = hashPassword(password);
     
-    // DEBUG: Afficher les hash pour comparaison
     if (account.password !== hashedPassword) {
-        errorEl.innerHTML = `❌ Mot de passe incorrect<br><small>DEBUG: Hash saisi: ${hashedPassword}<br>Hash stocké: ${account.password}</small>`;
+        errorEl.textContent = '❌ Mot de passe incorrect';
         return;
     }
     
@@ -1439,7 +1398,6 @@ function buyItem(itemId, price) {
         }
         
         alert(`✅ Achat réussi ! Vous avez acheté : ${item.querySelector('.item-name').textContent}`);
-        console.log('✅ Achat réussi:', itemId);
     } else if (playerData.ownedItems.includes(itemId)) {
         alert('⚠️ Vous possédez déjà cet objet !');
     } else {
@@ -1523,9 +1481,6 @@ function updateSkinSelector() {
 
 // Équiper un skin
 function equipSkin(skinId) {
-    console.log('🎨 Équipement du skin:', skinId);
-    console.log('🎨 currentUser:', currentUser);
-    console.log('🎨 accountsDatabase:', accountsDatabase);
     
     if (!currentUser || !accountsDatabase[currentUser]) {
         alert('⚠️ Vous devez être connecté pour équiper un skin');
@@ -1543,27 +1498,21 @@ function equipSkin(skinId) {
     playerData.currentSkin = skinId;
     accountsDatabase[currentUser].playerData.currentSkin = skinId;
     
-    console.log('🎨 Skin mis à jour dans playerData:', playerData.currentSkin);
-    console.log('🎨 Skin mis à jour dans accountsDatabase:', accountsDatabase[currentUser].playerData.currentSkin);
     
     savePlayerDataForCurrentUser();
     updateSkinSelector();
     
     const skinInfo = skinsData[skinId];
     alert(`✅ Skin équipé : ${skinInfo.name}`);
-    console.log('✅ Skin équipé avec succès:', skinId);
 }
 
 // Charger les données au démarrage
 // Vérifier la session utilisateur au lieu de charger directement les données
 window.addEventListener('DOMContentLoaded', () => {
-    console.log('🐭 Maze Mouse - Jeu initialisé');
-    console.log('🎮 Utilisez les flèches et ESPACE pour jouer');
     
     // CRÉER le GraphicsRenderer
     if (!window.graphicsRenderer) {
         window.graphicsRenderer = new GraphicsRenderer();
-        console.log('✅ GraphicsRenderer créé');
     }
     
     // Générer les aperçus de niveaux
@@ -1601,7 +1550,6 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!musicStarted) {
             musicStarted = true;
             playBackgroundMusic();
-            console.log('🎵 Tentative de démarrage de la musique...');
         }
     };
     
@@ -1613,7 +1561,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.btn, button').forEach(btn => {
         btn.addEventListener('click', () => {
             playSound('click');
-            console.log('🔊 Son de clic joué');
         });
     });
 });
@@ -1821,7 +1768,6 @@ function switchAccount(accountKey) {
     // Fermer le menu
     toggleUserMenu();
     
-    console.log('✅ Changé de compte vers:', accountsDatabase[currentUser].username);
 }
 
 function showSettings() {
@@ -1875,7 +1821,6 @@ function changeAvatar(newAvatar) {
     // Mettre à jour le sélecteur
     displayAvatarSelector();
     
-    console.log('✅ Avatar changé:', newAvatar);
 }
 
 function showAddAccount() {
@@ -2183,7 +2128,6 @@ function applyLanguage() {
         }
     });
     
-    console.log('✅ Langue appliquée:', currentLanguage);
 }
 
 function updateKeyDisplays() {
@@ -2359,7 +2303,6 @@ if (gameCanvas) {
             gameEngine.player.velocityY = 0;
             
             // Effet visuel
-            console.log('✨ TÉLÉPORTATION à:', worldX.toFixed(0), worldY.toFixed(0));
             
             // Désactiver le mode téléportation
             toggleTeleportMode();
@@ -3575,12 +3518,10 @@ function initTouchControls() {
     const btnAttack = document.getElementById('btnAttack');
     
     if (!joystickStick || !btnJump || !btnAttack || !joystickBase) {
-        console.log('❌ Contrôles tactiles non trouvés');
         setTimeout(initTouchControls, 500); // Réessayer
         return;
     }
     
-    console.log('✅ Initialisation des contrôles tactiles...');
     
     // IMPORTANT: Retirer les anciens listeners
     const newJoystickBase = joystickBase.cloneNode(true);
@@ -3612,7 +3553,6 @@ function initTouchControls() {
         touchControls.joystick.startX = rect.left + rect.width / 2;
         touchControls.joystick.startY = rect.top + rect.height / 2;
         
-        console.log('🕹️ Joystick activé (touch)');
     }, { passive: true });
     
     freshBase.addEventListener('touchmove', (e) => {
@@ -3667,7 +3607,6 @@ function initTouchControls() {
         touchControls.joystick.startX = rect.left + rect.width / 2;
         touchControls.joystick.startY = rect.top + rect.height / 2;
         
-        console.log('🕹️ Joystick activé (mouse)');
     });
     
     // IMPORTANT : mousemove sur DOCUMENT (pas sur freshBase)
@@ -3776,7 +3715,6 @@ function initTouchControls() {
     freshAttack.addEventListener('mouseup', attackEnd);
     freshAttack.addEventListener('mouseleave', attackEnd);
     
-    console.log('✅ Contrôles tactiles prêts (touch + mouse) !');
 }
 
 // Mettre à jour les contrôles du moteur de jeu avec les contrôles tactiles
@@ -3894,23 +3832,11 @@ window.addEventListener('DOMContentLoaded', () => {
 // GESTION DE L'ORIENTATION ÉCRAN
 // ================================
 
-// Forcer l'orientation paysage sur mobile
+// Suggérer l'orientation paysage sur mobile (sans forcer le plein écran)
 function forceLandscapeOrientation() {
-    // Vérifier si on est sur mobile/tablette
-    if (window.screen && window.screen.orientation) {
-        try {
-            // Tenter de verrouiller en mode paysage
-            window.screen.orientation.lock('landscape').then(() => {
-                console.log('📱 Orientation verrouillée en paysage');
-            }).catch((err) => {
-                console.log('⚠️ Impossible de verrouiller l\'orientation:', err.message);
-                // Fallback: demander à l'utilisateur de tourner
-                showOrientationHint();
-            });
-        } catch (err) {
-            console.log('⚠️ API Orientation non supportée');
-        }
-    }
+    // Ne pas utiliser screen.orientation.lock() car cela force le plein écran
+    // Simplement afficher un hint si on est en mode portrait
+    showOrientationHint();
 }
 
 // Déverrouiller l'orientation
@@ -3918,9 +3844,7 @@ function unlockOrientation() {
     if (window.screen && window.screen.orientation) {
         try {
             window.screen.orientation.unlock();
-            console.log('📱 Orientation déverrouillée');
         } catch (err) {
-            console.log('⚠️ Erreur déverrouillage orientation:', err);
         }
     }
 }
@@ -3944,7 +3868,7 @@ function showOrientationHint() {
             font-size: 1.2rem;
             animation: fadeIn 0.3s ease;
         `;
-        hint.innerHTML = '🔄<br>Tournez votre appareil<br>en mode paysage';
+        hint.innerHTML = '🔄<br>Pour une meilleure expérience,<br>tournez votre appareil en mode paysage';
         document.body.appendChild(hint);
         
         // Retirer le hint quand on tourne
@@ -3964,6 +3888,172 @@ function showOrientationHint() {
             window.removeEventListener('resize', checkOrientation);
         }, 5000);
     }
+}
+
+
+// ================================
+// GESTION DU MULTIJOUEUR
+// ================================
+
+// Afficher l'écran multijoueur
+function showMultiplayerScreen() {
+    hideAllScreens();
+    document.getElementById('multiplayerScreen').classList.add('active');
+    refreshServers();
+}
+
+// Sélectionner une équipe
+function selectTeam(team) {
+    if (!currentUser) {
+        alert('Vous devez être connecté pour jouer en multijoueur !');
+        showLogin();
+        return;
+    }
+    
+    // Créer le client multijoueur s'il n'existe pas
+    if (!multiplayerClient) {
+        multiplayerClient = new MultiplayerClient();
+    }
+    
+    // Connexion au serveur
+    const username = currentUser || playerName || 'Joueur';
+    const skin = (accountsDatabase[currentUser] && accountsDatabase[currentUser].playerData.currentSkin) || 'default';
+    
+    multiplayerClient.connect(username, skin, 1)
+        .then(() => {
+            // Démarrer le jeu en mode multijoueur
+            startMultiplayerGame(team);
+        })
+        .catch((error) => {
+            console.error('Erreur de connexion au serveur:', error);
+            alert('Impossible de se connecter au serveur multijoueur.\nAssurez-vous que le serveur est démarré (npm start).');
+        });
+}
+
+// Démarrer une partie multijoueur
+function startMultiplayerGame(team) {
+    hideAllScreens();
+    document.getElementById('gameScreen').classList.add('active');
+    
+    // Forcer l'affichage des contrôles mobiles sur les appareils tactiles
+    const mobileControls = document.getElementById('mobileControls');
+    if (mobileControls) {
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const isSmallScreen = window.innerWidth <= 1024;
+        
+        if (isTouchDevice || isSmallScreen) {
+            mobileControls.style.display = 'block';
+        }
+    }
+    
+    forceLandscapeOrientation();
+    
+    setTimeout(() => {
+        initTouchControls();
+    }, 300);
+    
+    const playerNameEl = document.getElementById('playerName');
+    if (playerNameEl) {
+        playerNameEl.textContent = playerName;
+    }
+    
+    if (!gameEngine) {
+        gameEngine = new GameEngine();
+    }
+    
+    gameEngine.difficulty = 'medium';
+    gameEngine.lives = 3;
+    gameEngine.maxLives = 3;
+    
+    updateHealthBar(gameEngine.lives, 3);
+    
+    if (currentUser && accountsDatabase[currentUser]) {
+        const currentSkin = accountsDatabase[currentUser].playerData.currentSkin || 'default';
+        gameEngine.player.currentSkin = currentSkin;
+        gameEngine.player.username = currentUser;
+        gameEngine.player.team = team;
+    } else {
+        gameEngine.player.currentSkin = 'default';
+        gameEngine.player.username = playerName || 'Joueur';
+        gameEngine.player.team = team;
+    }
+    
+    gameEngine.loadLevel(1);
+    gameEngine.isPaused = false;
+    
+    setTimeout(() => {
+        initTouchControls();
+    }, 500);
+    
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+    }
+    lastTimestamp = 0;
+    animationId = requestAnimationFrame(gameLoop);
+}
+
+// Rafraîchir la liste des serveurs
+function refreshServers() {
+    const serversList = document.getElementById('serversList');
+    if (!serversList) return;
+    
+    // Pour l'instant, afficher un serveur local par défaut
+    serversList.innerHTML = `
+        <div class="server-card" onclick="connectToServer('localhost')">
+            <div class="server-info">
+                <div class="server-name">🖥️ Serveur Local</div>
+                <div class="server-details">
+                    <span class="server-players">👥 0/10</span>
+                    <span class="server-ping">🟢 <5ms</span>
+                    <span class="server-mode">🏰 Mode Classique</span>
+                </div>
+            </div>
+            <button class="server-join-btn">REJOINDRE</button>
+        </div>
+    `;
+}
+
+// Se connecter à un serveur
+function connectToServer(serverAddress) {
+    if (!multiplayerClient) {
+        multiplayerClient = new MultiplayerClient();
+    }
+    
+    if (serverAddress === 'localhost') {
+        multiplayerClient.serverUrl = 'ws://localhost:8080';
+    } else {
+        multiplayerClient.serverUrl = serverAddress;
+    }
+    
+    // L'utilisateur devra sélectionner une équipe ensuite
+    // La sélection d'équipe déclenchera la connexion
+}
+
+// Filtrer les serveurs
+function filterServers() {
+    // Pour l'instant, simplement rafraîchir
+    refreshServers();
+}
+
+// Déconnecter du multijoueur
+function disconnectMultiplayer() {
+    if (multiplayerClient) {
+        multiplayerClient.disconnect();
+        multiplayerClient = null;
+    }
+}
+
+// Modifier la boucle de jeu pour dessiner les autres joueurs
+const originalGameLoop = window.gameLoop;
+if (originalGameLoop) {
+    window.gameLoop = function(timestamp) {
+        originalGameLoop(timestamp);
+        
+        // Dessiner les autres joueurs en multijoueur
+        if (multiplayerClient && multiplayerClient.isConnected && gameEngine && gameEngine.ctx) {
+            multiplayerClient.drawOtherPlayers(gameEngine.ctx, gameEngine.camera);
+        }
+    };
 }
 
 

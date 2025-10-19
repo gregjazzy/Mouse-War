@@ -22,6 +22,7 @@ class GameEngine {
         this.isPaused = false;
         this.isGameOver = false;
         this.isVictory = false;
+        this.difficulty = 'medium'; // Difficulté par défaut
         
         // Joueur (souris) - taille relative aux tiles (80% d'une tile)
         this.player = {
@@ -89,11 +90,9 @@ class GameEngine {
     init() {
         this.canvas = document.getElementById('gameCanvas');
         if (!this.canvas) {
-            console.error('❌ Canvas non trouvé !');
             return;
         }
         
-        console.log('✅ Canvas trouvé:', this.canvas);
         
         this.ctx = this.canvas.getContext('2d');
         
@@ -115,17 +114,14 @@ class GameEngine {
             // Ne pas attaquer si on clique sur un bouton
             if (e.target.tagName === 'BUTTON') return;
             
-            console.log('🖱️ CLIC DÉTECTÉ !', e.target.tagName);
             this.handleAttack(e);
         });
         
         // Écouteur sur le canvas aussi (au cas où)
         this.canvas.addEventListener('click', (e) => {
-            console.log('🖱️ CLIC sur canvas !');
             this.handleAttack(e);
         });
         
-        console.log('✅ Écouteurs de clic ajoutés');
     }
     
     resizeCanvas() {
@@ -160,7 +156,6 @@ class GameEngine {
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         
-        console.log('📐 Canvas redimensionné:', this.width, 'x', this.height, '| Mobile:', isMobile);
         
         // Recalculer les tailles de tiles si un niveau est chargé
         if (this.levelData && this.levelData.map) {
@@ -199,7 +194,6 @@ class GameEngine {
         // Vérifier le cooldown
         if (this.player.attackCooldown > 0) return;
         
-        console.log('⚔️ ATTAQUE !');
         
         // Jouer le son d'attaque
         if (typeof playSound === 'function') {
@@ -233,7 +227,6 @@ class GameEngine {
         };
         
         const damage = weaponDamage[player.currentSkin] || 1;
-        console.log(`⚔️ Attaque avec ${player.currentSkin} - Dégâts: ${damage}`);
         
         // Calculer la zone d'attaque (devant le joueur)
         const attackX = player.direction === 'right' 
@@ -266,14 +259,12 @@ class GameEngine {
                 
                 // 🔧 ENLEVER DES PV AU LIEU DE TUER DIRECTEMENT
                 enemy.health -= damage;
-                console.log(`💥 Ennemi touché ! HP: ${enemy.health}/${enemy.maxHealth}`);
                 
                 // Si l'ennemi est mort, le retirer
                 if (enemy.health <= 0) {
                     this.enemies.splice(i, 1);
                     this.score += 50;
                     enemiesKilled++;
-                    console.log('💀 Ennemi éliminé ! Score +50');
                     
                     // Mettre à jour l'affichage du score
                     if (typeof updateScore === 'function') {
@@ -284,24 +275,18 @@ class GameEngine {
         }
         
         if (enemiesKilled > 0) {
-            console.log(`✅ ${enemiesKilled} ennemi(s) éliminé(s) !`);
         } else {
-            console.log('❌ Aucun ennemi touché');
         }
     }
     
     loadLevel(levelNumber) {
-        console.log('🎮 Chargement du niveau:', levelNumber);
         this.currentLevel = levelNumber;
         this.levelData = getLevelData(levelNumber);
         
         if (!this.levelData) {
-            console.error('❌ Niveau non trouvé:', levelNumber);
             return;
         }
         
-        console.log('✅ Niveau trouvé:', this.levelData.name);
-        console.log('📐 Map dimensions:', this.levelData.map[0].length, 'x', this.levelData.map.length);
         
         // CALCULER LES BONNES TAILLES DE TILES AVANT DE PARSER LE NIVEAU
         if (this.levelData && this.levelData.map) {
@@ -313,7 +298,6 @@ class GameEngine {
             this.tileSizeY = Math.floor(this.height / levelRows);
             this.tileSize = this.tileSizeY;
             
-            console.log('📏 Tailles calculées - tileSizeX:', this.tileSizeX, 'tileSizeY:', this.tileSizeY);
         }
         
         // Réinitialiser
@@ -328,7 +312,6 @@ class GameEngine {
         // Parser le niveau (maintenant avec les bonnes tailles de tiles)
         this.parseLevel();
         
-        console.log('🔢 Objets créés - Tiles:', this.tiles.length, 'Fromages:', this.cheeses.length, 'Ennemis:', this.enemies.length);
         
         // Positionner le joueur
         this.player.x = this.levelData.startX * this.tileSizeX;
@@ -342,13 +325,11 @@ class GameEngine {
         this.player.width = Math.floor(avgTileSize * 0.67);
         this.player.height = Math.floor(avgTileSize * 0.67);
         
-        console.log('🐭 Joueur positionné à:', this.player.x, this.player.y, 'Taille:', this.player.width, 'x', this.player.height);
         
         // Mettre à jour l'UI
         // L'indicateur de niveau a été supprimé, on ne l'utilise plus
         this.updateUI();
         
-        console.log('✅ Niveau chargé avec succès!');
     }
     
     parseLevel() {
@@ -481,10 +462,6 @@ class GameEngine {
     handlePlayerInput() {
         const player = this.player;
         
-        // NE PAS recharger le skin à chaque frame !
-        // Le skin est déjà défini par startGame() depuis le compte utilisateur
-        // Ce code causait le bug où le skin changeait constamment
-        
         // Appliquer les pouvoirs du skin
         this.applySkinPowers();
         
@@ -508,28 +485,23 @@ class GameEngine {
             
             // DEBUG COMPLET
             if (jumpKeyDown) {
-                console.log('🎮 Touche appuyée - onGround:', player.onGround, 'jumpKeyPressed:', player.jumpKeyPressed, 'doubleJumpUsed:', player.doubleJumpUsed);
             }
             
             if (jumpKeyDown && !player.jumpKeyPressed) {
                 // Nouvelle pression détectée
                 if (player.onGround) {
                     // Premier saut
-                    console.log('🦘 PREMIER SAUT - velocityY:', -player.jumpPower);
                     player.velocityY = -player.jumpPower;
                     player.isJumping = true;
                     player.onGround = false;
                     player.doubleJumpUsed = false;
                 } else if (!player.doubleJumpUsed) {
                     // Double saut en l'air
-                    console.log('✨ DOUBLE SAUT ! - velocityY:', -player.jumpPower * 0.8);
                     player.velocityY = -player.jumpPower * 0.8;
                     player.doubleJumpUsed = true;
                     
-                    // Effet visuel désactivé temporairement (cause des bugs)
-                    // this.createJumpEffect(player.x + player.width / 2, player.y + player.height);
+                    this.createJumpEffect(player.x + player.width / 2, player.y + player.height);
                 } else {
-                    console.log('❌ Double saut déjà utilisé');
                 }
             }
             
@@ -544,7 +516,6 @@ class GameEngine {
     createJumpEffect(x, y) {
         // Vérifier que x et y sont valides
         if (!isFinite(x) || !isFinite(y)) {
-            console.warn('⚠️ Position invalide pour effet de saut:', x, y);
             return;
         }
         
@@ -593,7 +564,6 @@ class GameEngine {
                                 playSound('collect');
                             }
                             
-                            console.log('✨ Golden: Fromage auto-collecté !');
                         }
                     }
                 }
@@ -612,7 +582,6 @@ class GameEngine {
                 // Régénération de vie toutes les 5 secondes
                 if (Math.floor(this.elapsedTime / 60) % 5 === 0 && this.elapsedTime % 60 === 0 && this.lives < 3) {
                     this.lives++;
-                    console.log('🧛 Vampire: Vie régénérée !');
                 }
                 break;
                 
@@ -661,7 +630,6 @@ class GameEngine {
                     const dashSpeed = 25;
                     player.velocityX = player.direction === 'right' ? dashSpeed : -dashSpeed;
                     player.powerCooldown = 120; // 2 secondes de cooldown
-                    console.log('🤖 Robot: Dash activé !');
                 }
                 break;
                 
@@ -676,17 +644,13 @@ class GameEngine {
                     if (randomBonus === 0) {
                         player.speedBoost = 2.5;
                         player.powerCooldown = 180; // 3 secondes
-                        console.log('🌈 Rainbow: Vitesse x2.5 !');
                     } else if (randomBonus === 1 && this.lives < 3) {
                         this.lives++;
-                        console.log('🌈 Rainbow: +1 vie !');
                     } else if (randomBonus === 2) {
                         this.score += 500;
-                        console.log('🌈 Rainbow: +500 points !');
                     } else {
                         player.jumpPower = 25;
                         player.powerCooldown = 180;
-                        console.log('🌈 Rainbow: Super saut !');
                     }
                 }
                 // Réinitialiser le jumpPower
@@ -719,7 +683,6 @@ class GameEngine {
                                 playSound('collect');
                             }
                             
-                            console.log('🐉 Dragon Légendaire: Fromage absorbé !');
                         }
                     }
                 }
@@ -958,8 +921,7 @@ class GameEngine {
                         this.score += 100;
                     }
                     
-                    // Effet désactivé temporairement pour éviter bugs visuels
-                    // this.createCollectEffect(cheese.x, cheese.y);
+                    this.createCollectEffect(cheese.x, cheese.y);
                 }
             }
         }

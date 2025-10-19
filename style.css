@@ -3986,11 +3986,23 @@ body {
     }
 }
 
+/* Afficher sur tablettes en paysage */
+@media (max-width: 1024px) and (max-height: 768px) {
+    .mobile-controls {
+        display: block !important;
+    }
+}
+
 /* Afficher aussi sur écrans tactiles peu importe la taille */
 @media (hover: none) and (pointer: coarse) {
     .mobile-controls {
-        display: block;
+        display: block !important;
     }
+}
+
+/* Forcer l'affichage quand gameScreen est actif sur mobile */
+#gameScreen.active .mobile-controls {
+    display: block !important;
 }
 
 /* Joystick virtuel */

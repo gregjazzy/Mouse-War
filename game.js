@@ -230,6 +230,9 @@ function startGame(levelNumber) {
     // 🔧 VÉRIFIER QUE L'ÉCOUTEUR DE CLIC EST BIEN ACTIF
     console.log('🖱️ Canvas pour attaque:', gameEngine.canvas ? 'OK' : 'ERREUR');
     
+    // Initialiser les contrôles tactiles
+    setTimeout(() => initTouchControls(), 100);
+    
     // Démarrer la boucle de jeu
     if (animationId) {
         cancelAnimationFrame(animationId);
@@ -252,6 +255,9 @@ function gameLoop(timestamp = 0) {
     lastTimestamp = timestamp;
     
     if (gameEngine) {
+        // Mettre à jour les contrôles tactiles
+        updateGameEngineWithTouchControls();
+        
         gameEngine.update(deltaTime);
         gameEngine.render();
     }
@@ -1141,16 +1147,20 @@ function loginUser() {
     
     // Vérifier les identifiants
     const userKey = username.toLowerCase();
-    const account = accountsDatabase[userKey];
     
-    if (!account) {
-        errorEl.textContent = '❌ Nom d\'utilisateur incorrect';
+    // DEBUG: Afficher les comptes disponibles si le compte n'existe pas
+    if (!accountsDatabase[userKey]) {
+        const availableAccounts = Object.keys(accountsDatabase);
+        errorEl.innerHTML = `❌ Nom d'utilisateur incorrect<br><small>DEBUG: Comptes disponibles: ${availableAccounts.length > 0 ? availableAccounts.join(', ') : 'Aucun compte créé'}</small>`;
         return;
     }
     
+    const account = accountsDatabase[userKey];
     const hashedPassword = hashPassword(password);
+    
+    // DEBUG: Afficher les hash pour comparaison
     if (account.password !== hashedPassword) {
-        errorEl.textContent = '❌ Mot de passe incorrect';
+        errorEl.innerHTML = `❌ Mot de passe incorrect<br><small>DEBUG: Hash saisi: ${hashedPassword}<br>Hash stocké: ${account.password}</small>`;
         return;
     }
     
@@ -3484,5 +3494,157 @@ function pauseMultiplayerGame() {
         showNotification('▶️ Partie reprise', 'success');
     }
 }
+
+// ================================
+// CONTRÔLES TACTILES MOBILE
+// ================================
+
+// Variables pour les contrôles tactiles
+let touchControls = {
+    joystick: {
+        active: false,
+        startX: 0,
+        startY: 0,
+        currentX: 0,
+        currentY: 0,
+        directionX: 0,
+        directionY: 0
+    },
+    jump: false
+};
+
+// Initialiser les contrôles tactiles
+function initTouchControls() {
+    const joystickStick = document.getElementById('joystickStick');
+    const btnJump = document.getElementById('btnJump');
+    
+    if (!joystickStick || !btnJump) return;
+    
+    // Joystick - Touch Start
+    joystickStick.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchControls.joystick.active = true;
+        joystickStick.classList.add('active');
+        
+        const touch = e.touches[0];
+        const rect = joystickStick.parentElement.getBoundingClientRect();
+        touchControls.joystick.startX = rect.left + rect.width / 2;
+        touchControls.joystick.startY = rect.top + rect.height / 2;
+    });
+    
+    // Joystick - Touch Move
+    joystickStick.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!touchControls.joystick.active) return;
+        
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - touchControls.joystick.startX;
+        const deltaY = touch.clientY - touchControls.joystick.startY;
+        
+        // Limiter le déplacement au rayon du joystick
+        const maxDistance = 40; // 40px de rayon max
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        
+        if (distance > maxDistance) {
+            const angle = Math.atan2(deltaY, deltaX);
+            touchControls.joystick.currentX = Math.cos(angle) * maxDistance;
+            touchControls.joystick.currentY = Math.sin(angle) * maxDistance;
+        } else {
+            touchControls.joystick.currentX = deltaX;
+            touchControls.joystick.currentY = deltaY;
+        }
+        
+        // Déplacer visuellement le stick
+        joystickStick.style.transform = `translate(calc(-50% + ${touchControls.joystick.currentX}px), calc(-50% + ${touchControls.joystick.currentY}px))`;
+        
+        // Calculer la direction normalisée (-1 à 1)
+        touchControls.joystick.directionX = touchControls.joystick.currentX / maxDistance;
+        touchControls.joystick.directionY = touchControls.joystick.currentY / maxDistance;
+    });
+    
+    // Joystick - Touch End
+    const joystickEnd = (e) => {
+        e.preventDefault();
+        touchControls.joystick.active = false;
+        touchControls.joystick.directionX = 0;
+        touchControls.joystick.directionY = 0;
+        joystickStick.classList.remove('active');
+        joystickStick.style.transform = 'translate(-50%, -50%)';
+    };
+    
+    joystickStick.addEventListener('touchend', joystickEnd);
+    joystickStick.addEventListener('touchcancel', joystickEnd);
+    
+    // Bouton Sauter - Touch Start
+    btnJump.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchControls.jump = true;
+        btnJump.style.transform = 'scale(0.9)';
+    });
+    
+    // Bouton Sauter - Touch End
+    const jumpEnd = (e) => {
+        e.preventDefault();
+        touchControls.jump = false;
+        btnJump.style.transform = 'scale(1)';
+    };
+    
+    btnJump.addEventListener('touchend', jumpEnd);
+    btnJump.addEventListener('touchcancel', jumpEnd);
+}
+
+// Mettre à jour les contrôles du moteur de jeu avec les contrôles tactiles
+function updateGameEngineWithTouchControls() {
+    if (!gameEngine) return;
+    
+    // Déplacement horizontal depuis le joystick
+    if (Math.abs(touchControls.joystick.directionX) > 0.2) {
+        if (touchControls.joystick.directionX < 0) {
+            gameEngine.keys.left = true;
+            gameEngine.keys.right = false;
+        } else {
+            gameEngine.keys.right = true;
+            gameEngine.keys.left = false;
+        }
+    } else {
+        gameEngine.keys.left = false;
+        gameEngine.keys.right = false;
+    }
+    
+    // Saut depuis le bouton
+    if (touchControls.jump) {
+        gameEngine.keys.jump = true;
+        gameEngine.keys.up = true;
+        gameEngine.keys.space = true;
+    } else {
+        gameEngine.keys.jump = false;
+        gameEngine.keys.up = false;
+        gameEngine.keys.space = false;
+    }
+}
+
+// Modifier la boucle de jeu pour inclure les contrôles tactiles
+const originalGameLoop = function gameLoop(timestamp) {
+    if (!gameEngine) return;
+    
+    const deltaTime = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
+    
+    // Mettre à jour les contrôles tactiles
+    updateGameEngineWithTouchControls();
+    
+    if (!gameEngine.isPaused) {
+        gameEngine.update(deltaTime);
+        gameEngine.render();
+        updateHUD();
+    }
+    
+    animationId = requestAnimationFrame(gameLoop);
+};
+
+// Initialiser les contrôles tactiles au chargement
+window.addEventListener('DOMContentLoaded', () => {
+    initTouchControls();
+});
 
 

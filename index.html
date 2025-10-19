@@ -2,7 +2,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Maze Mouse - Adventure</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -218,9 +221,11 @@
 
     <!-- Écran de commandes -->
     <div id="controlsScreen" class="screen">
-        <h2 class="screen-title">COMMANDES</h2>
+        <h2 class="screen-title">🎮 COMMANDES</h2>
         
+        <!-- Commandes PC -->
         <div class="controls-container">
+            <h3 style="color: white; text-align: center; font-size: 1.8rem; margin-bottom: 1.5rem; text-shadow: 0 3px 10px rgba(0,0,0,0.5);">💻 SUR PC</h3>
             <div class="control-item">
                 <div class="key-display">←→↑↓</div>
                 <div class="control-desc">Se déplacer dans le labyrinthe</div>
@@ -237,12 +242,51 @@
             </div>
         </div>
         
-        <div class="game-info">
-            <h3>OBJECTIF</h3>
+        <!-- Commandes Mobile/Tablette -->
+        <div class="controls-container" style="margin-top: 2rem;">
+            <h3 style="color: white; text-align: center; font-size: 1.8rem; margin-bottom: 1.5rem; text-shadow: 0 3px 10px rgba(0,0,0,0.5);">📱 SUR MOBILE & TABLETTE</h3>
+            <div class="control-item">
+                <div class="key-display" style="font-size: 2.5rem;">🕹️</div>
+                <div class="control-desc">Joystick virtuel (bas gauche) pour se déplacer</div>
+            </div>
+            
+            <div class="control-item">
+                <div class="key-display" style="font-size: 2.5rem;">⬆️</div>
+                <div class="control-desc">Bouton SAUTER (bas droite) pour sauter</div>
+            </div>
+            
+            <div class="control-item">
+                <div class="key-display" style="font-size: 1.5rem;">👆</div>
+                <div class="control-desc">Appuyez sur les boutons du HUD pour les options</div>
+            </div>
+        </div>
+        
+        <!-- Mode multijoueur -->
+        <div class="game-info" style="margin-top: 2rem;">
+            <h3>🌐 JOUER EN LIGNE (MULTIJOUEUR)</h3>
+            <p>⚔️ Cliquez sur MULTIJOUEUR depuis le menu principal</p>
+            <p>🔴🔵 Choisissez votre équipe (Rouge ou Bleue)</p>
+            <p>🌍 Sélectionnez un serveur disponible</p>
+            <p>💬 Chattez avec vos coéquipiers pendant la partie</p>
+            <p>🏆 Collectez plus de fromages que l'équipe adverse !</p>
+        </div>
+        
+        <div class="game-info" style="margin-top: 2rem;">
+            <h3>🎯 OBJECTIF DU JEU</h3>
             <p>🧀 Collectez tous les fromages</p>
             <p>🚪 Atteignez la sortie</p>
             <p>⚠️ Évitez les pièges mortels</p>
             <p>⏱️ Faites le meilleur temps possible</p>
+            <p>💰 Gagnez des pièces pour acheter des skins et niveaux</p>
+        </div>
+        
+        <div class="game-info" style="margin-top: 2rem;">
+            <h3>💡 ASTUCES MULTI-PLATEFORMES</h3>
+            <p>✅ Le jeu s'adapte automatiquement à votre appareil</p>
+            <p>📱 Sur mobile : Les contrôles tactiles apparaissent automatiquement</p>
+            <p>💻 Sur PC : Utilisez le clavier pour plus de précision</p>
+            <p>🖥️ Sur tablette : Profitez du grand écran avec les contrôles tactiles</p>
+            <p>🔄 Tournez votre téléphone en mode paysage pour plus de confort !</p>
         </div>
         
         <button class="btn btn-back" onclick="backToMenu()">
@@ -401,6 +445,24 @@
         <button class="teleport-btn" id="teleportBtn" style="display: none;" title="Cliquez sur le niveau pour vous téléporter">
             <span>✨</span> TÉLÉPORTER
         </button>
+        
+        <!-- Contrôles tactiles pour mobile/tablette -->
+        <div id="mobileControls" class="mobile-controls">
+            <!-- Joystick virtuel pour les déplacements -->
+            <div class="virtual-joystick">
+                <div class="joystick-base">
+                    <div class="joystick-stick" id="joystickStick"></div>
+                </div>
+            </div>
+            
+            <!-- Boutons d'action -->
+            <div class="action-buttons">
+                <button class="btn-jump" id="btnJump">
+                    <span class="btn-icon">⬆</span>
+                    <span class="btn-label">SAUTER</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Sélecteur de mode en jeu -->

@@ -4099,12 +4099,12 @@ body {
         padding: 0.15rem 0.3rem;
     }
     
-    /* Boutons MINUSCULES en 1 colonne */
+    /* Boutons en 2 COLONNES */
     .menu-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        max-width: 200px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.3rem;
+        max-width: 95%;
         width: 100%;
         padding-bottom: 0.2rem;
     }
@@ -4112,14 +4112,18 @@ body {
     .btn {
         min-width: auto;
         width: 100%;
-        padding: 0.3rem 0.5rem;
+        padding: 0.4rem 0.2rem;
         font-size: 0.55rem;
         min-height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     
     .btn-icon {
-        font-size: 0.8rem;
-        margin-right: 0.2rem;
+        font-size: 1rem;
+        margin-right: 0;
+        margin-bottom: 0.15rem;
     }
     
     /* Formulaires de connexion */

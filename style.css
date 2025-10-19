@@ -4473,6 +4473,31 @@ body {
    ORIENTATION FORCÉE - MOBILE UNIQUEMENT
    ================================ */
 
+/* Forcer l'affichage en mode paysage pour l'écran de jeu */
+@media (max-width: 768px) and (orientation: portrait) {
+    #gameScreen.active {
+        transform: rotate(90deg);
+        transform-origin: center center;
+        width: 100vh;
+        height: 100vw;
+        position: fixed;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+    }
+    
+    #gameScreen.active::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        z-index: -1;
+    }
+}
+
 /* En mode paysage : optimiser l'affichage */
 @media (max-width: 896px) and (orientation: landscape) {
     /* Optimisation de l'écran de jeu en paysage */

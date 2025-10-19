@@ -3533,28 +3533,45 @@ function initTouchControls() {
     
     if (!joystickStick || !btnJump || !btnAttack || !joystickBase) {
         console.log('❌ Contrôles tactiles non trouvés');
+        setTimeout(initTouchControls, 500); // Réessayer
         return;
     }
     
-    console.log('✅ Contrôles tactiles initialisés');
+    console.log('✅ Initialisation des contrôles tactiles...');
+    
+    // IMPORTANT: Retirer les anciens listeners
+    const newJoystickBase = joystickBase.cloneNode(true);
+    joystickBase.parentNode.replaceChild(newJoystickBase, joystickBase);
+    
+    const newBtnJump = btnJump.cloneNode(true);
+    btnJump.parentNode.replaceChild(newBtnJump, btnJump);
+    
+    const newBtnAttack = btnAttack.cloneNode(true);
+    btnAttack.parentNode.replaceChild(newBtnAttack, btnAttack);
+    
+    // Récupérer les nouveaux éléments
+    const freshBase = document.querySelector('.joystick-base');
+    const freshStick = document.getElementById('joystickStick');
+    const freshJump = document.getElementById('btnJump');
+    const freshAttack = document.getElementById('btnAttack');
     
     // Joystick - Touch Start (sur la base entière)
-    joystickBase.addEventListener('touchstart', (e) => {
+    freshBase.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
         touchControls.joystick.active = true;
-        joystickStick.classList.add('active');
+        freshStick.classList.add('active');
         
         const touch = e.touches[0];
-        const rect = joystickBase.getBoundingClientRect();
+        const rect = freshBase.getBoundingClientRect();
         touchControls.joystick.startX = rect.left + rect.width / 2;
         touchControls.joystick.startY = rect.top + rect.height / 2;
         
         console.log('🕹️ Joystick activé');
-    });
+    }, { passive: false });
     
     // Joystick - Touch Move (sur la base)
-    joystickBase.addEventListener('touchmove', (e) => {
+    freshBase.addEventListener('touchmove', (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!touchControls.joystick.active) return;
@@ -3564,7 +3581,7 @@ function initTouchControls() {
         const deltaY = touch.clientY - touchControls.joystick.startY;
         
         // Limiter le déplacement au rayon du joystick
-        const maxDistance = 40; // 40px de rayon max
+        const maxDistance = 40;
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         
         if (distance > maxDistance) {
@@ -3577,12 +3594,12 @@ function initTouchControls() {
         }
         
         // Déplacer visuellement le stick
-        joystickStick.style.transform = `translate(calc(-50% + ${touchControls.joystick.currentX}px), calc(-50% + ${touchControls.joystick.currentY}px))`;
+        freshStick.style.transform = `translate(calc(-50% + ${touchControls.joystick.currentX}px), calc(-50% + ${touchControls.joystick.currentY}px))`;
         
-        // Calculer la direction normalisée (-1 à 1)
+        // Calculer la direction
         touchControls.joystick.directionX = touchControls.joystick.currentX / maxDistance;
         touchControls.joystick.directionY = touchControls.joystick.currentY / maxDistance;
-    });
+    }, { passive: false });
     
     // Joystick - Touch End
     const joystickEnd = (e) => {
@@ -3590,52 +3607,50 @@ function initTouchControls() {
         touchControls.joystick.active = false;
         touchControls.joystick.directionX = 0;
         touchControls.joystick.directionY = 0;
-        joystickStick.classList.remove('active');
-        joystickStick.style.transform = 'translate(-50%, -50%)';
+        freshStick.classList.remove('active');
+        freshStick.style.transform = 'translate(-50%, -50%)';
     };
     
-    joystickStick.addEventListener('touchend', joystickEnd);
-    joystickStick.addEventListener('touchcancel', joystickEnd);
+    freshBase.addEventListener('touchend', joystickEnd, { passive: false });
+    freshBase.addEventListener('touchcancel', joystickEnd, { passive: false });
     
-    // Bouton Sauter - Touch Start
-    btnJump.addEventListener('touchstart', (e) => {
+    // Bouton Sauter
+    freshJump.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         touchControls.jump = true;
-        btnJump.style.transform = 'scale(0.9)';
-    });
+        freshJump.style.transform = 'scale(0.85)';
+        console.log('⬆️ Saut activé');
+    }, { passive: false });
     
-    // Bouton Sauter - Touch End
     const jumpEnd = (e) => {
         e.preventDefault();
         touchControls.jump = false;
-        btnJump.style.transform = 'scale(1)';
+        freshJump.style.transform = 'scale(1)';
     };
     
-    btnJump.addEventListener('touchend', jumpEnd);
-    btnJump.addEventListener('touchcancel', jumpEnd);
+    freshJump.addEventListener('touchend', jumpEnd, { passive: false });
+    freshJump.addEventListener('touchcancel', jumpEnd, { passive: false });
     
-    // Bouton Attaquer - Touch Start
-    btnAttack.addEventListener('touchstart', (e) => {
+    // Bouton Attaquer
+    freshAttack.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
         touchControls.attack = true;
-        btnAttack.style.transform = 'scale(0.85)';
+        freshAttack.style.transform = 'scale(0.85)';
         console.log('⚔️ Attaque activée');
-    });
+    }, { passive: false });
     
-    // Bouton Attaquer - Touch End
     const attackEnd = (e) => {
         e.preventDefault();
         touchControls.attack = false;
-        btnAttack.style.transform = 'scale(1)';
+        freshAttack.style.transform = 'scale(1)';
     };
     
-    btnAttack.addEventListener('touchend', attackEnd);
-    btnAttack.addEventListener('touchcancel', attackEnd);
+    freshAttack.addEventListener('touchend', attackEnd, { passive: false });
+    freshAttack.addEventListener('touchcancel', attackEnd, { passive: false });
     
-    // Touch end sur la base aussi
-    joystickBase.addEventListener('touchend', joystickEnd);
-    joystickBase.addEventListener('touchcancel', joystickEnd);
+    console.log('✅ Contrôles tactiles prêts !');
 }
 
 // Mettre à jour les contrôles du moteur de jeu avec les contrôles tactiles

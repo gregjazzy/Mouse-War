@@ -81,6 +81,7 @@ body {
     padding: 1rem;
     overflow-y: auto;
     overflow-x: hidden;
+    min-height: 100vh;
 }
 
 .auth-container {
@@ -92,6 +93,7 @@ body {
     max-width: 90%;
     margin: auto;
     animation: slideUp 0.6s ease;
+    width: 100%;
 }
 
 .auth-form {
@@ -983,6 +985,12 @@ body {
 #gameScreen {
     flex-direction: column;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    padding: 0;
+    overflow: hidden;
+}
+
+#gameScreen.active {
+    display: flex;
 }
 
 /* HUD du jeu - DESIGN FINAL AMÉLIORÉ */
@@ -1076,6 +1084,8 @@ body {
     position: relative;
     width: 100%;
     min-height: 0;
+    padding: 0.5rem;
+    overflow: hidden;
 }
 
 #gameCanvas {
@@ -1087,7 +1097,12 @@ body {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     position: relative;
-    z-index: 1; /* ✅ En dessous des contrôles tactiles */
+    z-index: 1;
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto !important;
+    width: 100% !important;
 }
 
 .pause-btn {
@@ -4156,6 +4171,34 @@ body {
         font-size: 14px; /* Augmenté de 10px à 14px */
     }
     
+    /* ✅ ÉCRAN DE CONNEXION MOBILE */
+    #loginScreen {
+        padding: 1rem;
+        overflow-y: auto;
+        overflow-x: hidden;
+        justify-content: flex-start;
+    }
+    
+    /* Logo sur écran de connexion mobile */
+    #loginScreen .logo-container {
+        margin: 1rem auto;
+        width: 100%;
+    }
+    
+    #loginScreen .game-logo {
+        font-size: 2rem;
+    }
+    
+    #loginScreen .logo-cheese,
+    #loginScreen .logo-mouse {
+        font-size: 1.8rem;
+    }
+    
+    #loginScreen .game-subtitle {
+        font-size: 1rem;
+        margin-top: 0.5rem;
+    }
+    
     /* ✅ Menu compact mais lisible */
     #startScreen {
         padding: 0.5rem 1rem; /* Augmenté */
@@ -4370,14 +4413,49 @@ body {
     }
     
     /* Canvas adaptatif */
-    #gameCanvas {
-        max-width: 100%;
-        height: auto !important;
-        border-width: 3px;
+    /* Écran de jeu mobile optimisé */
+    #gameScreen {
+        padding: 0;
+        overflow: hidden;
+    }
+    
+    .game-hud {
+        padding: 0.3rem 0.5rem;
+        gap: 0.3rem;
+        flex-wrap: nowrap;
+    }
+    
+    .hud-item {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.7rem;
+        min-width: auto;
+    }
+    
+    .hud-icon {
+        font-size: 0.9rem;
+    }
+    
+    .hud-value {
+        font-size: 0.7rem;
     }
     
     #canvasContainer {
-        padding: 0.5rem;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        width: 100%;
+        overflow: hidden;
+    }
+    
+    #gameCanvas {
+        max-width: 100vw;
+        max-height: calc(100vh - 70px);
+        width: 100% !important;
+        height: auto !important;
+        border-width: 2px;
+        display: block;
     }
     
     /* Barre de contrôle */

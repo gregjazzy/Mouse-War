@@ -137,14 +137,13 @@ class GameEngine {
             const isLandscape = windowWidth > windowHeight;
             
             if (isLandscape) {
-                // Mode paysage : utiliser toute la largeur disponible
-                this.width = Math.min(windowWidth - 20, 896); // Max 896px en paysage
-                this.height = Math.min(windowHeight - 100, 504); // Garder de la place pour les contrôles
+                // Mode paysage : utiliser presque toute la largeur
+                this.width = windowWidth - 10;
+                this.height = windowHeight - 80; // Espace pour le HUD
             } else {
-                // Mode portrait : adapter à l'écran en gardant de la place pour les contrôles
-                this.width = windowWidth - 20;
-                // Augmenter la hauteur du canvas en portrait (70% au lieu de 50%)
-                this.height = Math.min(windowHeight * 0.7, windowWidth * 1.2); // Ratio plus vertical
+                // Mode portrait : adapter complètement à l'écran
+                this.width = windowWidth - 10;
+                this.height = windowHeight - 120; // Espace pour HUD et contrôles
             }
         } else {
             // Sur desktop/tablette : taille normale
@@ -156,6 +155,11 @@ class GameEngine {
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         
+        // Appliquer aussi via CSS pour s'assurer que c'est responsive
+        this.canvas.style.width = this.width + 'px';
+        this.canvas.style.height = this.height + 'px';
+        this.canvas.style.maxWidth = '100%';
+        this.canvas.style.height = 'auto';
         
         // Recalculer les tailles de tiles si un niveau est chargé
         if (this.levelData && this.levelData.map) {

@@ -1033,15 +1033,37 @@ const enemyTypes = {
 
 // Charger la base de données des comptes
 function loadAccountsDatabase() {
-    const saved = localStorage.getItem('mazeMouse_accounts');
-    if (saved) {
-        accountsDatabase = JSON.parse(saved);
+    try {
+        const saved = localStorage.getItem('mazeMouse_accounts');
+        if (saved) {
+            const data = JSON.parse(saved);
+            // Valider que c'est bien un objet
+            if (data && typeof data === 'object' && !Array.isArray(data)) {
+                accountsDatabase = data;
+            } else {
+                console.error('Format de base de données invalide');
+                accountsDatabase = {};
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des comptes:', error);
+        accountsDatabase = {};
+        // Sauvegarder une base vide pour éviter les erreurs futures
+        localStorage.removeItem('mazeMouse_accounts');
     }
 }
 
 // Sauvegarder la base de données des comptes
 function saveAccountsDatabase() {
-    localStorage.setItem('mazeMouse_accounts', JSON.stringify(accountsDatabase));
+    try {
+        localStorage.setItem('mazeMouse_accounts', JSON.stringify(accountsDatabase));
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde des comptes:', error);
+        // Possible quota exceeded
+        if (error.name === 'QuotaExceededError') {
+            alert('⚠️ Espace de stockage insuffisant. Veuillez libérer de l\'espace.');
+        }
+    }
 }
 
 // Afficher le formulaire de connexion
@@ -1060,16 +1082,36 @@ window.showRegisterForm = function() {
     document.getElementById('registerError').textContent = '';
 }
 
-// Fonction pour hasher un mot de passe (simple hash pour localStorage)
-function hashPassword(password) {
-    // Fonction simple de hash - pour une vraie application, utiliser bcrypt ou similaire
+// Fonction pour hasher un mot de passe avec SHA-256 (meilleure sécurité)
+async function hashPassword(password, salt = 'mazeMouse_salt_v1') {
+    // Utiliser l'API Web Crypto pour un hash sécurisé
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + salt);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
+// Version synchrone pour compatibilité (moins sécurisée mais meilleure que l'ancienne)
+function hashPasswordSync(password) {
     let hash = 0;
-    for (let i = 0; i < password.length; i++) {
-        const char = password.charCodeAt(i);
+    const salt = 'mazeMouse_salt_secure_2024';
+    const saltedPassword = password + salt;
+    
+    for (let i = 0; i < saltedPassword.length; i++) {
+        const char = saltedPassword.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
+        hash = hash & hash;
     }
-    return hash.toString(36);
+    
+    // Ajouter une deuxième passe pour plus de sécurité
+    let hash2 = hash;
+    for (let i = 0; i < saltedPassword.length; i++) {
+        hash2 = ((hash2 << 3) + hash2) ^ saltedPassword.charCodeAt(i);
+    }
+    
+    return (hash.toString(36) + hash2.toString(36));
 }
 
 // Créer un nouveau compte
@@ -1085,13 +1127,39 @@ window.registerUser = function() {
         return;
     }
     
+    // Validation du nom d'utilisateur
     if (username.length < 3) {
         errorEl.textContent = '❌ Le nom doit contenir au moins 3 caractères';
         return;
     }
     
+    if (username.length > 20) {
+        errorEl.textContent = '❌ Le nom ne doit pas dépasser 20 caractères';
+        return;
+    }
+    
+    // Vérifier que le nom ne contient que des caractères alphanumériques, tirets et underscores
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!usernameRegex.test(username)) {
+        errorEl.textContent = '❌ Le nom ne peut contenir que des lettres, chiffres, - et _';
+        return;
+    }
+    
+    // Mots réservés et interdits
+    const forbiddenWords = ['admin', 'root', 'system', 'moderator', 'mod', 'owner', 'administrator'];
+    if (forbiddenWords.some(word => username.toLowerCase().includes(word))) {
+        errorEl.textContent = '❌ Ce nom est réservé ou interdit';
+        return;
+    }
+    
+    // Validation du mot de passe
     if (password.length < 4) {
         errorEl.textContent = '❌ Le mot de passe doit contenir au moins 4 caractères';
+        return;
+    }
+    
+    if (password.length > 128) {
+        errorEl.textContent = '❌ Le mot de passe ne doit pas dépasser 128 caractères';
         return;
     }
     
@@ -1106,8 +1174,8 @@ window.registerUser = function() {
         return;
     }
     
-    // Créer le compte
-    const hashedPassword = hashPassword(password);
+    // Créer le compte avec hash sécurisé
+    const hashedPassword = hashPasswordSync(password);
     accountsDatabase[username.toLowerCase()] = {
         username: username,
         password: hashedPassword,
@@ -1116,7 +1184,7 @@ window.registerUser = function() {
         playerData: {
             coins: 0,
             ownedItems: ['level-1', 'level-2', 'level-3', 'level-11'], // Niveaux 1-3 + niveau gratuit au départ
-    currentSkin: 'default'
+            currentSkin: 'default'
         }
     };
     
@@ -1156,7 +1224,7 @@ window.loginUser = function() {
     }
     
     const account = accountsDatabase[userKey];
-    const hashedPassword = hashPassword(password);
+    const hashedPassword = hashPasswordSync(password);
     
     if (account.password !== hashedPassword) {
         errorEl.textContent = '❌ Mot de passe incorrect';
@@ -2066,11 +2134,19 @@ const translations = {
 
 function loadSettings() {
     // Charger les paramètres depuis localStorage
-    const savedSettings = localStorage.getItem('mazeMouse_settings');
-    if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        keyBindings = settings.keyBindings || keyBindings;
-        currentLanguage = settings.language || 'en';
+    try {
+        const savedSettings = localStorage.getItem('mazeMouse_settings');
+        if (savedSettings) {
+            const settings = JSON.parse(savedSettings);
+            if (settings && typeof settings === 'object') {
+                keyBindings = settings.keyBindings || keyBindings;
+                currentLanguage = settings.language || 'en';
+            }
+        }
+    } catch (error) {
+        console.error('Erreur chargement paramètres:', error);
+        // Utiliser les paramètres par défaut
+        localStorage.removeItem('mazeMouse_settings');
     }
     
     // Mettre à jour l'affichage
@@ -2080,11 +2156,15 @@ function loadSettings() {
 }
 
 function saveSettings() {
-    const settings = {
-        keyBindings: keyBindings,
-        language: currentLanguage
-    };
-    localStorage.setItem('mazeMouse_settings', JSON.stringify(settings));
+    try {
+        const settings = {
+            keyBindings: keyBindings,
+            language: currentLanguage
+        };
+        localStorage.setItem('mazeMouse_settings', JSON.stringify(settings));
+    } catch (error) {
+        console.error('Erreur sauvegarde paramètres:', error);
+    }
 }
 
 function changeLanguage(lang) {

@@ -76,8 +76,11 @@ body {
 
 /* ============ ÉCRAN DE CONNEXION/INSCRIPTION ============ */
 #loginScreen {
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    padding: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .auth-container {
@@ -86,6 +89,8 @@ body {
     padding: 3rem;
     box-shadow: 0 20px 60px var(--shadow);
     min-width: 450px;
+    max-width: 90%;
+    margin: auto;
     animation: slideUp 0.6s ease;
 }
 
@@ -3968,6 +3973,7 @@ body {
    ================================ */
 
 /* Masquer les contrôles tactiles par défaut (PC) */
+/* Contrôles mobiles - CACHÉS PAR DÉFAUT SUR DESKTOP */
 .mobile-controls {
     display: none;
     position: fixed;
@@ -3979,16 +3985,18 @@ body {
     z-index: 9999; /* ✅ Au-dessus du canvas */
 }
 
-/* Afficher UNIQUEMENT sur appareils tactiles */
-@media (hover: none) and (pointer: coarse) {
+/* Afficher UNIQUEMENT sur écrans tactiles de petite taille */
+@media (hover: none) and (pointer: coarse) and (max-width: 1024px) {
     .mobile-controls {
         display: block !important;
     }
 }
 
-/* Forcer l'affichage quand gameScreen est actif sur mobile */
-#gameScreen.active .mobile-controls {
-    display: block !important;
+/* Forcer l'affichage quand gameScreen est actif ET que c'est un appareil tactile */
+@media (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+    #gameScreen.active .mobile-controls {
+        display: block !important;
+    }
 }
 
 /* Joystick virtuel */
@@ -4232,17 +4240,46 @@ body {
     
     /* Formulaires de connexion */
     .auth-container {
-        min-width: 90%;
-        padding: 2rem 1.5rem;
+        min-width: 95%;
+        max-width: 95%;
+        padding: 1.5rem 1rem;
+        margin: 1rem auto;
     }
     
     .form-title {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
     }
     
     .form-input {
-        padding: 0.8rem 1rem;
+        padding: 0.9rem 1rem;
         font-size: 1rem;
+        border-radius: 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 1.2rem;
+    }
+    
+    .form-group label {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    /* Boutons de formulaire plus grands et tactiles */
+    .auth-form .btn {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        min-height: 50px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .switch-form {
+        font-size: 0.95rem;
+        margin-top: 1rem;
     }
     
     /* En-tête utilisateur */

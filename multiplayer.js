@@ -6,7 +6,25 @@ class MultiplayerClient {
         this.playerId = null;
         this.connectedPlayers = new Map();
         this.isConnected = false;
-        this.serverUrl = 'ws://localhost:8080'; // À changer pour votre serveur
+        
+        // Configuration automatique du serveur WebSocket
+        // En production, utilisera le même host que le site
+        // En développement local, utilisera localhost:8080
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = isLocalhost ? 'localhost:8080' : window.location.host;
+        
+        this.serverUrl = `${protocol}//${host}`;
+        
+        // Permettre override via variable d'environnement ou paramètre URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const customServer = urlParams.get('ws_server');
+        if (customServer) {
+            this.serverUrl = customServer;
+        }
+        
+        console.log('🌐 Serveur WebSocket configuré:', this.serverUrl);
+        
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         this.updateInterval = null;
@@ -25,7 +43,12 @@ class MultiplayerClient {
                 };
                 
                 this.ws.onmessage = (event) => {
-                    this.handleMessage(JSON.parse(event.data));
+                    try {
+                        const data = JSON.parse(event.data);
+                        this.handleMessage(data);
+                    } catch (error) {
+                        console.error('Erreur parsing message WebSocket:', error);
+                    }
                 };
                 
                 this.ws.onclose = () => {
@@ -41,11 +64,16 @@ class MultiplayerClient {
                 
                 // Attendre d'être connecté puis rejoindre la room
                 this.ws.addEventListener('message', (event) => {
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'connected') {
-                        this.playerId = data.playerId;
-                        this.joinRoom(username, skin, level);
-                        resolve();
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'connected') {
+                            this.playerId = data.playerId;
+                            this.joinRoom(username, skin, level);
+                            resolve();
+                        }
+                    } catch (error) {
+                        console.error('Erreur parsing message de connexion:', error);
+                        reject(error);
                     }
                 }, { once: true });
                 

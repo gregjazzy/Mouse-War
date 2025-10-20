@@ -170,11 +170,6 @@ class GameEngine {
     handleKeyDown(e) {
         this.keys[e.key] = true;
         
-        // Debug temporaire
-        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', ' '].includes(e.key)) {
-            console.log('Touche détectée:', e.key, 'Keys:', this.keys);
-        }
-        
         if (e.key === 'Escape') {
             pauseGame();
         }
@@ -488,10 +483,6 @@ class GameEngine {
         if (!player.isStunned) {
             const jumpKeyDown = this.keys[' '] || this.keys['ArrowUp'];
             
-            // DEBUG COMPLET
-            if (jumpKeyDown) {
-            }
-            
             if (jumpKeyDown && !player.jumpKeyPressed) {
                 // Nouvelle pression détectée
                 if (player.onGround) {
@@ -501,12 +492,13 @@ class GameEngine {
                     player.onGround = false;
                     player.doubleJumpUsed = false;
                 } else if (!player.doubleJumpUsed) {
-                    // Double saut en l'air
-                    player.velocityY = -player.jumpPower * 0.8;
-                    player.doubleJumpUsed = true;
-                    
-                    this.createJumpEffect(player.x + player.width / 2, player.y + player.height);
-                } else {
+                    // Double saut en l'air (si le skin le permet)
+                    const hasDoubleJump = ['skin-ninja', 'skin-alien', 'skin-angel', 'skin-legendary'].includes(player.currentSkin);
+                    if (hasDoubleJump) {
+                        player.velocityY = -player.jumpPower * 0.8;
+                        player.doubleJumpUsed = true;
+                        this.createJumpEffect(player.x + player.width / 2, player.y + player.height);
+                    }
                 }
             }
             

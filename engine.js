@@ -36,6 +36,7 @@ class GameEngine {
             jumpPower: 20, // Augmenté pour avoir plus d'espace pour les doubles sauts
             isJumping: false,
             onGround: false,
+            coyoteTime: 0, // Temps de grâce pour sauter après avoir quitté le sol
             direction: 'right',
             animationFrame: 0,
             animationTimer: 0,
@@ -487,16 +488,24 @@ class GameEngine {
         if (!player.isStunned) {
             const jumpKeyDown = this.keys[' '] || this.keys['ArrowUp'];
             
+            // 🔧 Mettre à jour le Coyote Time (temps de grâce de 150ms)
+            if (player.onGround) {
+                player.coyoteTime = 150; // millisecondes
+            } else if (player.coyoteTime > 0) {
+                player.coyoteTime -= deltaTime * 1000; // Convertir deltaTime en ms
+            }
+            
             if (jumpKeyDown && !player.jumpKeyPressed) {
                 // Debug: Log pour voir si le saut est détecté
-                console.log('🎮 Saut détecté! onGround:', player.onGround, 'velocityY:', player.velocityY);
+                console.log('🎮 Saut détecté! onGround:', player.onGround, 'coyoteTime:', player.coyoteTime, 'velocityY:', player.velocityY);
                 
-                // Nouvelle pression détectée
-                if (player.onGround) {
+                // Nouvelle pression détectée - Saut possible si onGround OU pendant le coyoteTime
+                if (player.onGround || player.coyoteTime > 0) {
                     // Premier saut
                     player.velocityY = -player.jumpPower;
                     player.isJumping = true;
                     player.onGround = false;
+                    player.coyoteTime = 0; // Consommer le coyote time
                     player.doubleJumpUsed = false;
                     console.log('✅ Saut exécuté! jumpPower:', player.jumpPower);
                 } else if (!player.doubleJumpUsed) {
@@ -506,6 +515,9 @@ class GameEngine {
                         player.velocityY = -player.jumpPower * 0.8;
                         player.doubleJumpUsed = true;
                         this.createJumpEffect(player.x + player.width / 2, player.y + player.height);
+                        console.log('✅ Double saut exécuté!');
+                    } else {
+                        console.log('❌ Pas de double saut pour ce skin:', player.currentSkin);
                     }
                 }
             }

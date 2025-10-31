@@ -488,11 +488,11 @@ class GameEngine {
         if (!player.isStunned) {
             const jumpKeyDown = this.keys[' '] || this.keys['ArrowUp'];
             
-            // 🔧 Mettre à jour le Coyote Time (temps de grâce de 150ms)
+            // 🔧 Mettre à jour le Coyote Time (temps de grâce)
             if (player.onGround) {
-                player.coyoteTime = 150; // millisecondes
+                player.coyoteTime = 5; // frames (environ 150ms à 30fps)
             } else if (player.coyoteTime > 0) {
-                player.coyoteTime -= deltaTime * 1000; // Convertir deltaTime en ms
+                player.coyoteTime--; // Décrémenter chaque frame
             }
             
             if (jumpKeyDown && !player.jumpKeyPressed) {

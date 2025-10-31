@@ -261,6 +261,22 @@ window.startGame = function(levelNumber) {
     gameEngine.loadLevel(levelNumber);
     console.log('✅ Niveau chargé');
     
+    // 🔧 FORCER LE REDIMENSIONNEMENT DU CANVAS PLUSIEURS FOIS
+    console.log('📐 Redimensionnement canvas...');
+    gameEngine.resizeCanvas();
+    setTimeout(() => {
+        gameEngine.resizeCanvas();
+        console.log('📐 Canvas redimensionné (100ms)');
+    }, 100);
+    setTimeout(() => {
+        gameEngine.resizeCanvas();
+        console.log('📐 Canvas redimensionné (300ms)');
+    }, 300);
+    setTimeout(() => {
+        gameEngine.resizeCanvas();
+        console.log('📐 Canvas redimensionné FINAL (1000ms)');
+    }, 1000);
+    
     gameEngine.isPaused = false;
     gameEngine.isGameOver = false;
     gameEngine.isVictory = false;

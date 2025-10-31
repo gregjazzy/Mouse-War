@@ -9,16 +9,52 @@
     <title>Maze Mouse - Adventure</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧀</text></svg>">
     
-    <!-- 🚫 REDIRECTION TÉLÉPHONES VERS PAGE DÉDIÉE -->
+    <style>
+        /* 🚫 PAGE BLOCAGE TÉLÉPHONE */
+        #mobileBlock {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 999999;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        #mobileBlock .content {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 2.5rem;
+            max-width: 500px;
+            text-align: center;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        #mobileBlock h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        #mobileBlock .emoji { font-size: 4rem; margin: 1rem 0; }
+        #mobileBlock h2 { font-size: 1.5rem; color: #FFE66D; margin-bottom: 1rem; }
+        #mobileBlock p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem; }
+        #mobileBlock .url { background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 10px; font-family: monospace; margin: 1rem 0; }
+    </style>
+    
     <script>
+        // 🔥 DÉTECTION ET BLOCAGE IMMÉDIAT
         (function() {
             var w = window.innerWidth;
-            var h = window.innerHeight;
-            var isMobilePhone = (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-                                && w < 600) || (w < 600 && h < 900);
-            
-            if (isMobilePhone) {
-                window.location.href = 'mobile-blocked.html';
+            if (w < 600) {
+                document.addEventListener('DOMContentLoaded', function() {
+                    var block = document.getElementById('mobileBlock');
+                    if (block) {
+                        block.style.display = 'flex';
+                        document.getElementById('screenSizeSpan').textContent = w;
+                    }
+                });
             }
         })();
     </script>
@@ -26,6 +62,24 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 🚫 ÉCRAN BLOCAGE TÉLÉPHONE -->
+    <div id="mobileBlock">
+        <div class="content">
+            <div style="font-size:5rem;">🖥️</div>
+            <h1>Maze Mouse</h1>
+            <div class="emoji">🧀🐭</div>
+            <h2>Ordinateur ou Tablette Requis</h2>
+            <p>Écran minimum : <strong>600px</strong><br>Votre écran : <strong><span id="screenSizeSpan"></span>px</strong></p>
+            <p>Ouvrez ce lien sur un appareil plus grand :</p>
+            <div class="url">gregjazzy.github.io/Mouse-War</div>
+            <p style="font-size:0.9rem;">
+                📱 Téléphone : ❌<br>
+                📱 Tablette : ✅<br>
+                🖥️ PC : ✅
+            </p>
+        </div>
+    </div>
+    
     <!-- Écran de connexion/inscription -->
     <div id="loginScreen" class="screen active">
         <div class="logo-container">

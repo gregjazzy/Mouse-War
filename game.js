@@ -184,21 +184,32 @@ function hideAllScreens() {
 
 // Démarrer une partie
 window.startGame = function(levelNumber) {
+    // 🔍 DIAGNOSTIC MOBILE
+    console.log('🎮 START GAME - Niveau:', levelNumber);
+    console.log('📱 Window size:', window.innerWidth, 'x', window.innerHeight);
+    console.log('👆 Touch device:', 'ontouchstart' in window);
+    
     hideAllScreens();
     document.getElementById('gameScreen').classList.add('active');
+    console.log('✅ gameScreen activé');
     
     // Forcer l'affichage des contrôles mobiles sur les appareils tactiles
     const mobileControls = document.getElementById('mobileControls');
+    console.log('🎮 mobileControls trouvé:', !!mobileControls);
+    
     if (mobileControls) {
         // Détecter si c'est un VRAI appareil tactile (pas juste un petit écran)
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        console.log('👆 isTouchDevice:', isTouchDevice);
         
         // Ne forcer l'affichage QUE si c'est un vrai appareil tactile
         if (isTouchDevice) {
             mobileControls.style.display = 'block';
+            console.log('✅ Contrôles tactiles affichés');
         } else {
             // Sur PC, toujours cacher les contrôles tactiles
             mobileControls.style.display = 'none';
+            console.log('❌ Contrôles tactiles cachés (PC)');
         }
     }
     
@@ -217,7 +228,11 @@ window.startGame = function(levelNumber) {
     }
     
     if (!gameEngine) {
+        console.log('🆕 Création nouveau GameEngine');
         gameEngine = new GameEngine();
+        console.log('✅ GameEngine créé');
+    } else {
+        console.log('♻️ Réutilisation GameEngine existant');
     }
     
     // Nombre de vies fixe
@@ -226,6 +241,7 @@ window.startGame = function(levelNumber) {
     
     // Initialiser la barre de vie IMMÉDIATEMENT
     updateHealthBar(gameEngine.lives, gameEngine.maxLives);
+    console.log('❤️ Barre de vie mise à jour');
     
     // ✅ CHARGER LE SKIN ÉQUIPÉ DU JOUEUR
     
@@ -234,12 +250,16 @@ window.startGame = function(levelNumber) {
         gameEngine.player.currentSkin = currentSkin;
         // Ajouter le nom d'utilisateur au joueur
         gameEngine.player.username = currentUser;
+        console.log('👤 Skin chargé:', currentSkin);
     } else {
         gameEngine.player.currentSkin = 'default';
         gameEngine.player.username = playerName || 'Joueur';
+        console.log('👤 Skin par défaut');
     }
     
+    console.log('📦 Chargement niveau', levelNumber);
     gameEngine.loadLevel(levelNumber);
+    console.log('✅ Niveau chargé');
     
     gameEngine.isPaused = false;
     gameEngine.isGameOver = false;
@@ -249,7 +269,9 @@ window.startGame = function(levelNumber) {
     
     // Initialiser les contrôles tactiles APRÈS un délai
     setTimeout(() => {
+        console.log('🎮 Initialisation contrôles tactiles...');
         initTouchControls();
+        console.log('✅ Contrôles tactiles initialisés');
     }, 500);
     
     // Démarrer la boucle de jeu
@@ -257,7 +279,9 @@ window.startGame = function(levelNumber) {
         cancelAnimationFrame(animationId);
     }
     lastTimestamp = performance.now();
+    console.log('🎬 Démarrage boucle de jeu...');
     gameLoop();
+    console.log('✅ Boucle de jeu démarrée');
     
     // Forcer la mise à jour de l'UI après un court délai
     setTimeout(() => {
@@ -265,6 +289,8 @@ window.startGame = function(levelNumber) {
             updateHealthBar(gameEngine.lives, gameEngine.maxLives);
         }
     }, 100);
+    
+    console.log('🎉 START GAME TERMINÉ');
 }
 
 // Contrôles de jeu

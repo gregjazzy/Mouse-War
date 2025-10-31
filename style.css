@@ -24,6 +24,41 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+}
+
+/* 🌌 Arrière-plan animé avec étoiles */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(2px 2px at 20% 30%, white, transparent),
+        radial-gradient(2px 2px at 60% 70%, white, transparent),
+        radial-gradient(1px 1px at 50% 50%, white, transparent),
+        radial-gradient(1px 1px at 80% 10%, white, transparent),
+        radial-gradient(2px 2px at 90% 60%, white, transparent),
+        radial-gradient(1px 1px at 33% 80%, white, transparent),
+        radial-gradient(2px 2px at 70% 40%, white, transparent);
+    background-size: 200% 200%;
+    background-position: 0% 0%;
+    animation: twinkle 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes twinkle {
+    0%, 100% { 
+        opacity: 0.8;
+        background-position: 0% 0%;
+    }
+    50% { 
+        opacity: 1;
+        background-position: 100% 100%;
+    }
 }
 
 /* Écrans */
@@ -50,11 +85,14 @@ body {
 /* Écran de démarrage */
 #startScreen {
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-    overflow-y: auto; /* ✅ Permettre le scroll vertical */
-    overflow-x: hidden; /* Pas de scroll horizontal */
+    background: 
+        linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
 }
 
+/* 🌟 Particules animées en arrière-plan */
 #startScreen::before {
     content: '';
     position: absolute;
@@ -63,15 +101,50 @@ body {
     right: 0;
     bottom: 0;
     background: 
-        radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 40% 20%, rgba(255, 230, 109, 0.15) 0%, transparent 50%);
-    animation: gradientShift 10s ease infinite;
+        radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 230, 109, 0.2) 0%, transparent 50%);
+    animation: gradientShift 10s ease infinite, float 15s ease-in-out infinite;
+    z-index: 0;
+}
+
+/* 💫 Effet de bulles flottantes */
+#startScreen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px),
+        radial-gradient(circle, rgba(255,255,255,0.15) 2px, transparent 2px),
+        radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 50px 50px, 80px 80px, 100px 100px;
+    background-position: 0 0, 40px 40px, 80px 80px;
+    animation: bubbleFloat 30s linear infinite;
+    z-index: 0;
 }
 
 @keyframes gradientShift {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.1); }
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1) rotate(0deg); 
+    }
+    50% { 
+        opacity: 0.8; 
+        transform: scale(1.2) rotate(5deg); 
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes bubbleFloat {
+    0% { background-position: 0 0, 40px 40px, 80px 80px; }
+    100% { background-position: 0 -100px, 40px -60px, 80px -80px; }
 }
 
 /* ============ ÉCRAN DE CONNEXION/INSCRIPTION ============ */
@@ -520,10 +593,14 @@ body {
     box-shadow: 
         0 10px 30px rgba(0, 0, 0, 0.3),
         0 4px 12px rgba(0, 0, 0, 0.2),
-        inset 0 2px 3px rgba(255, 255, 255, 0.3);
-    border: 3px solid rgba(255, 255, 255, 0.3);
+        inset 0 2px 3px rgba(255, 255, 255, 0.3),
+        0 0 20px rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    transform-style: preserve-3d;
+    perspective: 1000px;
 }
 
+/* ✨ Effet de brillance qui traverse le bouton */
 .btn::before {
     content: '';
     position: absolute;
@@ -532,9 +609,42 @@ body {
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.5);
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
+    z-index: 1;
+}
+
+/* 🌟 Particules scintillantes autour du bouton */
+.btn::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50px;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.8) 1px, transparent 1px),
+        radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+        radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.7) 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    animation: sparkle 2s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes sparkle {
+    0%, 100% { 
+        opacity: 0;
+        transform: rotate(0deg);
+    }
+    50% { 
+        opacity: 1;
+        transform: rotate(180deg);
+    }
 }
 
 .btn:hover::before {
@@ -569,6 +679,11 @@ body {
     background-size: 200% 200%;
     color: white;
     animation: gradientMove 3s ease infinite;
+    box-shadow: 
+        0 10px 30px rgba(255, 107, 107, 0.4),
+        0 4px 12px rgba(255, 107, 107, 0.3),
+        inset 0 2px 3px rgba(255, 255, 255, 0.3),
+        0 0 30px rgba(255, 107, 107, 0.3);
 }
 
 @keyframes gradientMove {
@@ -577,12 +692,15 @@ body {
 }
 
 .btn-primary:hover {
-    transform: translateY(-6px) scale(1.05);
+    transform: translateY(-8px) scale(1.08) rotateX(5deg);
     box-shadow: 
-        0 15px 40px rgba(255, 107, 107, 0.5),
-        0 8px 20px rgba(255, 107, 107, 0.3),
-        inset 0 2px 5px rgba(255, 255, 255, 0.4);
-    border-color: rgba(255, 255, 255, 0.6);
+        0 20px 50px rgba(255, 107, 107, 0.6),
+        0 10px 25px rgba(255, 107, 107, 0.4),
+        inset 0 2px 5px rgba(255, 255, 255, 0.5),
+        0 0 60px rgba(255, 107, 107, 0.5),
+        0 0 100px rgba(255, 107, 107, 0.3);
+    border-color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
 }
 
 .btn-primary:active {
@@ -594,14 +712,22 @@ body {
     background-size: 200% 200%;
     color: #2C3E50;
     animation: gradientMove 3s ease infinite;
+    box-shadow: 
+        0 10px 30px rgba(255, 165, 0, 0.4),
+        0 4px 12px rgba(255, 165, 0, 0.3),
+        inset 0 2px 3px rgba(255, 255, 255, 0.3),
+        0 0 30px rgba(255, 215, 0, 0.3);
 }
 
 .btn-shop:hover {
-    transform: translateY(-6px) scale(1.05);
+    transform: translateY(-8px) scale(1.08) rotateX(5deg);
     box-shadow: 
-        0 15px 40px rgba(255, 165, 0, 0.5),
-        0 8px 20px rgba(255, 165, 0, 0.3),
-        inset 0 2px 5px rgba(255, 255, 255, 0.4);
+        0 20px 50px rgba(255, 165, 0, 0.6),
+        0 10px 25px rgba(255, 165, 0, 0.4),
+        inset 0 2px 5px rgba(255, 255, 255, 0.5),
+        0 0 60px rgba(255, 215, 0, 0.5),
+        0 0 100px rgba(255, 215, 0, 0.3);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
     border-color: rgba(255, 255, 255, 0.6);
 }
 

@@ -488,6 +488,9 @@ class GameEngine {
             const jumpKeyDown = this.keys[' '] || this.keys['ArrowUp'];
             
             if (jumpKeyDown && !player.jumpKeyPressed) {
+                // Debug: Log pour voir si le saut est détecté
+                console.log('🎮 Saut détecté! onGround:', player.onGround, 'velocityY:', player.velocityY);
+                
                 // Nouvelle pression détectée
                 if (player.onGround) {
                     // Premier saut
@@ -495,6 +498,7 @@ class GameEngine {
                     player.isJumping = true;
                     player.onGround = false;
                     player.doubleJumpUsed = false;
+                    console.log('✅ Saut exécuté! jumpPower:', player.jumpPower);
                 } else if (!player.doubleJumpUsed) {
                     // Double saut en l'air (si le skin le permet)
                     const hasDoubleJump = ['skin-ninja', 'skin-alien', 'skin-angel', 'skin-legendary'].includes(player.currentSkin);

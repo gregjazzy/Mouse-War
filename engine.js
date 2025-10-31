@@ -134,26 +134,30 @@ class GameEngine {
         const isMobile = windowWidth <= 768;
         
         if (isMobile) {
-            // Sur mobile : adapter au viewport
+            // Sur mobile : adapter au viewport - PLEIN ÉCRAN
             const isLandscape = windowWidth > windowHeight;
             
             if (isLandscape) {
-                // Mode paysage : utiliser presque toute la largeur
-                this.width = windowWidth - 10;
-                this.height = windowHeight - 80; // Espace pour le HUD
+                // Mode paysage : PLEIN ÉCRAN moins HUD
+                this.width = windowWidth;
+                this.height = windowHeight - 100; // Espace pour le HUD en haut
             } else {
-                // Mode portrait : adapter complètement à l'écran
-                this.width = windowWidth - 10;
-                this.height = windowHeight - 120; // Espace pour HUD et contrôles
+                // Mode portrait : PLEIN ÉCRAN moins contrôles
+                this.width = windowWidth;
+                this.height = windowHeight - 250; // Espace pour HUD + contrôles en bas
             }
             
-            // Appliquer les dimensions au canvas (même résolution sur mobile maintenant)
+            // Appliquer les dimensions au canvas
             this.canvas.width = this.width;
             this.canvas.height = this.height;
             
-            // Afficher via CSS
+            // CSS pour forcer les dimensions (PAS de auto sur mobile !)
             this.canvas.style.width = this.width + 'px';
             this.canvas.style.height = this.height + 'px';
+            this.canvas.style.maxWidth = 'none';
+            this.canvas.style.maxHeight = 'none';
+            
+            console.log('📱 Canvas mobile:', this.width, 'x', this.height);
         } else {
             // Sur desktop/tablette : taille normale
             this.width = Math.min(windowWidth - 40, 1280);
@@ -163,13 +167,12 @@ class GameEngine {
             this.canvas.width = this.width;
             this.canvas.height = this.height;
             
-            // Appliquer aussi via CSS
+            // CSS responsive pour desktop
             this.canvas.style.width = this.width + 'px';
             this.canvas.style.height = this.height + 'px';
+            this.canvas.style.maxWidth = '100%';
+            this.canvas.style.height = 'auto';
         }
-        
-        this.canvas.style.maxWidth = '100%';
-        this.canvas.style.height = 'auto';
         
         // Recalculer les tailles de tiles si un niveau est chargé
         if (this.levelData && this.levelData.map) {
@@ -178,6 +181,8 @@ class GameEngine {
             this.tileSizeX = Math.floor(this.width / levelCols);
             this.tileSizeY = Math.floor(this.height / levelRows);
             this.tileSize = this.tileSizeY;
+            
+            console.log('🎮 Tiles:', this.tileSizeX, 'x', this.tileSizeY);
         }
     }
     

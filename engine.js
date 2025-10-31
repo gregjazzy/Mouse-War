@@ -134,56 +134,45 @@ class GameEngine {
         const isMobile = windowWidth <= 768;
         
         if (isMobile) {
-            // Sur mobile : PLEIN ÉCRAN BRUTAL
-            const isLandscape = windowWidth > windowHeight;
+            // 🔥 MOBILE : DIMENSIONS FIXES - PAS DE CALCULS COMPLIQUÉS
+            this.width = 800;
+            this.height = 450;
             
-            if (isLandscape) {
-                // Mode paysage : PLEIN ÉCRAN moins HUD
-                this.width = windowWidth;
-                this.height = windowHeight - 100;
-            } else {
-                // Mode portrait : PLEIN ÉCRAN moins contrôles
-                this.width = windowWidth;
-                this.height = windowHeight - 250;
-            }
-            
-            // 🔥 FORCER LES DIMENSIONS EN CONTOURNANT TOUT LE CSS
+            // Forcer les dimensions - MÉTHODE BRUTALE
             this.canvas.width = this.width;
             this.canvas.height = this.height;
-            
-            // Forcer via setAttribute (contourne le CSS)
             this.canvas.setAttribute('width', this.width);
             this.canvas.setAttribute('height', this.height);
             
-            // Forcer via style inline (priorité absolue sur CSS)
+            // Style inline avec priorité absolue
             this.canvas.style.cssText = `
-                width: ${this.width}px !important;
-                height: ${this.height}px !important;
-                max-width: none !important;
-                max-height: none !important;
-                min-width: ${this.width}px !important;
-                min-height: ${this.height}px !important;
+                width: 800px !important;
+                height: 450px !important;
+                max-width: 800px !important;
+                max-height: 450px !important;
+                min-width: 800px !important;
+                min-height: 450px !important;
                 display: block !important;
+                margin: 0 auto !important;
+                border: 2px solid rgba(255,255,255,0.3) !important;
             `;
             
-            console.log('🔥 MOBILE - Canvas FORCÉ:', this.width, 'x', this.height);
+            console.log('🔥 MOBILE FIXE:', this.width, 'x', this.height);
         } else {
-            // Sur desktop/tablette : taille normale
+            // Sur desktop : taille normale responsive
             this.width = Math.min(windowWidth - 40, 1280);
             this.height = Math.min(windowHeight - 200, 720);
             
-            // Appliquer les dimensions au canvas
             this.canvas.width = this.width;
             this.canvas.height = this.height;
             
-            // CSS responsive pour desktop
             this.canvas.style.width = this.width + 'px';
             this.canvas.style.height = this.height + 'px';
             this.canvas.style.maxWidth = '100%';
             this.canvas.style.height = 'auto';
         }
         
-        // Recalculer les tailles de tiles si un niveau est chargé
+        // Recalculer les tailles de tiles
         if (this.levelData && this.levelData.map) {
             const levelCols = this.levelData.map[0].length;
             const levelRows = this.levelData.map.length;
@@ -191,7 +180,7 @@ class GameEngine {
             this.tileSizeY = Math.floor(this.height / levelRows);
             this.tileSize = this.tileSizeY;
             
-            console.log('🎮 Tiles:', this.tileSizeX, 'x', this.tileSizeY);
+            console.log('🎮 Tiles:', this.tileSizeX, 'x', this.tileSizeY, '| Cols:', levelCols, 'Rows:', levelRows);
         }
     }
     

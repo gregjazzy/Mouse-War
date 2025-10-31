@@ -50,20 +50,10 @@ function loadAvailableModes() {
                     <div class="mode-icon">${modeData.icon}</div>
                     <h3 class="mode-name">${modeData.name}</h3>
                 </div>
-                <div class="difficulties-row">
-                    <button class="difficulty-btn easy" onclick="startGame(${levelNumber}, 'easy')">
-                        <div class="diff-stars">★☆☆</div>
-                        <div class="diff-label">Facile</div>
-                    </button>
-                    <button class="difficulty-btn medium" onclick="startGame(${levelNumber}, 'medium')">
-                        <div class="diff-stars">★★☆</div>
-                        <div class="diff-label">Moyen</div>
-                    </button>
-                    <button class="difficulty-btn hard" onclick="startGame(${levelNumber}, 'hard')">
-                        <div class="diff-stars">★★★</div>
-                        <div class="diff-label">Difficile</div>
-                    </button>
-                </div>
+                <button class="play-level-btn" onclick="startGame(${levelNumber})">
+                    <span class="play-icon">▶</span>
+                    JOUER
+                </button>
             `;
             modesContainer.appendChild(modeCard);
         }
@@ -193,7 +183,7 @@ function hideAllScreens() {
 }
 
 // Démarrer une partie
-window.startGame = function(levelNumber, difficulty = 'medium') {
+window.startGame = function(levelNumber) {
     hideAllScreens();
     document.getElementById('gameScreen').classList.add('active');
     
@@ -230,31 +220,12 @@ window.startGame = function(levelNumber, difficulty = 'medium') {
         gameEngine = new GameEngine();
     }
     
-    // 🔧 APPLIQUER LA DIFFICULTÉ
-    gameEngine.difficulty = difficulty;
-    
-    // Ajuster les vies selon la difficulté
-    let maxLives = 3; // Par défaut
-    switch(difficulty) {
-        case 'easy':
-            gameEngine.lives = 5;
-            maxLives = 5;
-            break;
-        case 'medium':
-            gameEngine.lives = 3;
-            maxLives = 3;
-            break;
-        case 'hard':
-            gameEngine.lives = 2;
-            maxLives = 2;
-            break;
-    }
-    
-    // Sauvegarder le max de vies pour l'affichage
-    gameEngine.maxLives = maxLives;
+    // Nombre de vies fixe
+    gameEngine.lives = 3;
+    gameEngine.maxLives = 3;
     
     // Initialiser la barre de vie IMMÉDIATEMENT
-    updateHealthBar(gameEngine.lives, maxLives);
+    updateHealthBar(gameEngine.lives, gameEngine.maxLives);
     
     // ✅ CHARGER LE SKIN ÉQUIPÉ DU JOUEUR
     

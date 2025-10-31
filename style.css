@@ -784,6 +784,37 @@ body {
     content: " 🔒";
 }
 
+/* Bouton JOUER simplifié */
+.play-level-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border: none;
+    border-radius: 15px;
+    padding: 1.5rem 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    box-shadow: 0 5px 20px rgba(76,175,80,0.4);
+}
+
+.play-level-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(76,175,80,0.6);
+    background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+}
+
+.play-level-btn .play-icon {
+    font-size: 2rem;
+}
+
+/* Ancien système de difficultés (gardé pour compatibilité) */
 .difficulties-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

@@ -134,7 +134,7 @@ class GameEngine {
         const isMobile = windowWidth <= 768;
         
         if (isMobile) {
-            // Sur mobile : adapter au viewport avec optimisation de résolution
+            // Sur mobile : adapter au viewport
             const isLandscape = windowWidth > windowHeight;
             
             if (isLandscape) {
@@ -147,28 +147,23 @@ class GameEngine {
                 this.height = windowHeight - 120; // Espace pour HUD et contrôles
             }
             
-            // 🚀 OPTIMISATION MOBILE: Réduire la résolution interne pour meilleures performances
-            // Afficher en taille normale mais dessiner avec moins de pixels
-            const scale = 0.75; // 75% de résolution = 2x plus rapide
-            this.canvas.width = Math.floor(this.width * scale);
-            this.canvas.height = Math.floor(this.height * scale);
-            
-            // Afficher en taille pleine via CSS
-            this.canvas.style.width = this.width + 'px';
-            this.canvas.style.height = this.height + 'px';
-            
-            // Ajuster le contexte pour compenser la réduction
-            this.ctx.scale(scale, scale);
-        } else {
-            // Sur desktop/tablette : taille normale, résolution native
-            this.width = Math.min(windowWidth - 40, 1280);
-            this.height = Math.min(windowHeight - 200, 720);
-            
-            // Appliquer les dimensions au canvas (résolution native sur PC)
+            // Appliquer les dimensions au canvas (même résolution sur mobile maintenant)
             this.canvas.width = this.width;
             this.canvas.height = this.height;
             
-            // Appliquer aussi via CSS pour s'assurer que c'est responsive
+            // Afficher via CSS
+            this.canvas.style.width = this.width + 'px';
+            this.canvas.style.height = this.height + 'px';
+        } else {
+            // Sur desktop/tablette : taille normale
+            this.width = Math.min(windowWidth - 40, 1280);
+            this.height = Math.min(windowHeight - 200, 720);
+            
+            // Appliquer les dimensions au canvas
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+            
+            // Appliquer aussi via CSS
             this.canvas.style.width = this.width + 'px';
             this.canvas.style.height = this.height + 'px';
         }

@@ -759,26 +759,26 @@ const soundEffects = {
 // Charger les fichiers audio
 function loadAudioFiles() {
     // Son de collecte de fromage (limité à 1.5 seconde)
-    soundEffects.collect = new Audio('sound/miam.wav');
+    soundEffects.collect = new Audio('Sound/miam.wav');
     soundEffects.collect.volume = soundEffectsVolume;
     soundEffects.collect.onerror = () => {
-        console.warn('⚠️ Impossible de charger sound/miam.wav');
+        console.warn('⚠️ Impossible de charger Sound/miam.wav');
         soundEffects.collect = null;
     };
     
     // Son de victoire
-    soundEffects.victory = new Audio('sound/yes.wav');
+    soundEffects.victory = new Audio('Sound/yes.wav');
     soundEffects.victory.volume = soundEffectsVolume;
     soundEffects.victory.onerror = () => {
-        console.warn('⚠️ Impossible de charger sound/yes.wav');
+        console.warn('⚠️ Impossible de charger Sound/yes.wav');
         soundEffects.victory = null;
     };
     
     // Son de mort/dégâts (quand le joueur se fait toucher)
-    soundEffects.death = new Audio('sound/aie.wav');
+    soundEffects.death = new Audio('Sound/aie.wav');
     soundEffects.death.volume = soundEffectsVolume;
     soundEffects.death.onerror = () => {
-        console.warn('⚠️ Impossible de charger sound/aie.wav');
+        console.warn('⚠️ Impossible de charger Sound/aie.wav');
         soundEffects.death = null;
     };
     

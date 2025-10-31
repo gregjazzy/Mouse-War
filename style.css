@@ -1257,9 +1257,7 @@ body::before {
     z-index: 1;
     display: block;
     margin: 0 auto;
-    max-width: 100%;
-    height: auto !important;
-    width: 100% !important;
+    /* PAS de width/height auto sur mobile - laissé contrôlé par JavaScript */
 }
 
 .pause-btn {
@@ -4642,10 +4640,7 @@ body::before {
     }
     
     #gameCanvas {
-        max-width: 100vw;
-        max-height: calc(100vh - 70px);
-        width: 100% !important;
-        height: auto !important;
+        /* MOBILE: Laisser JavaScript contrôler les dimensions ! */
         border-width: 2px;
         display: block;
     }
@@ -5059,10 +5054,7 @@ body::before {
     }
     
     #gameCanvas {
-        max-height: calc(100vh - 60px);
-        max-width: 100vw;
-        width: 100% !important;
-        height: auto !important;
+        /* MOBILE PAYSAGE: Laisser JavaScript contrôler les dimensions ! */
         border-width: 2px;
     }
     

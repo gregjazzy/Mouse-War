@@ -104,62 +104,83 @@ class MultiplayerClient {
     
     // Gérer les messages reçus
     handleMessage(data) {
-        switch (data.type) {
-            case 'connected':
-                this.playerId = data.playerId;
-                break;
-                
-            case 'players_list':
-                // Recevoir la liste des joueurs existants
-                data.players.forEach(player => {
-                    this.connectedPlayers.set(player.id, player);
-                });
-                console.log(`👥 ${data.players.length} joueurs déjà connectés`);
-                break;
-                
-            case 'player_joined':
-                // Un nouveau joueur a rejoint
-                this.connectedPlayers.set(data.player.id, data.player);
-                console.log(`✅ ${data.player.username} a rejoint la partie`);
-                this.showNotification(`${data.player.username} a rejoint la partie`);
-                break;
-                
-            case 'player_left':
-                // Un joueur a quitté
-                const leftPlayer = this.connectedPlayers.get(data.playerId);
-                if (leftPlayer) {
-                    console.log(`❌ ${leftPlayer.username} a quitté la partie`);
-                    this.showNotification(`${leftPlayer.username} a quitté la partie`);
-                }
-                this.connectedPlayers.delete(data.playerId);
-                break;
-                
-            case 'player_update':
-                // Mise à jour de la position d'un joueur
-                const player = this.connectedPlayers.get(data.playerId);
-                if (player) {
-                    player.x = data.x;
-                    player.y = data.y;
-                    player.direction = data.direction;
-                    player.isJumping = data.isJumping;
-                    player.isAttacking = data.isAttacking;
-                    player.animationFrame = data.animationFrame;
-                }
-                break;
-                
-            case 'chat':
-                // Message de chat
-                console.log(`💬 ${data.username}: ${data.message}`);
-                this.showChatMessage(data.username, data.message);
-                break;
-                
-            case 'player_level_change':
-                // Un joueur a changé de niveau
-                const changingPlayer = this.connectedPlayers.get(data.playerId);
-                if (changingPlayer) {
-                    changingPlayer.level = data.level;
-                }
-                break;
+        try {
+            if (!data || !data.type) {
+                console.warn('Message WebSocket invalide reçu:', data);
+                return;
+            }
+            
+            switch (data.type) {
+                case 'connected':
+                    this.playerId = data.playerId;
+                    break;
+                    
+                case 'players_list':
+                    // Recevoir la liste des joueurs existants
+                    if (Array.isArray(data.players)) {
+                        data.players.forEach(player => {
+                            this.connectedPlayers.set(player.id, player);
+                        });
+                        console.log(`👥 ${data.players.length} joueurs déjà connectés`);
+                    }
+                    break;
+                    
+                case 'player_joined':
+                    // Un nouveau joueur a rejoint
+                    if (data.player && data.player.id) {
+                        this.connectedPlayers.set(data.player.id, data.player);
+                        console.log(`✅ ${data.player.username} a rejoint la partie`);
+                        this.showNotification(`${data.player.username} a rejoint la partie`);
+                    }
+                    break;
+                    
+                case 'player_left':
+                    // Un joueur a quitté
+                    if (data.playerId) {
+                        const leftPlayer = this.connectedPlayers.get(data.playerId);
+                        if (leftPlayer) {
+                            console.log(`❌ ${leftPlayer.username} a quitté la partie`);
+                            this.showNotification(`${leftPlayer.username} a quitté la partie`);
+                        }
+                        this.connectedPlayers.delete(data.playerId);
+                    }
+                    break;
+                    
+                case 'player_update':
+                    // Mise à jour de la position d'un joueur
+                    if (data.playerId) {
+                        const player = this.connectedPlayers.get(data.playerId);
+                        if (player) {
+                            player.x = data.x;
+                            player.y = data.y;
+                            player.direction = data.direction;
+                            player.isJumping = data.isJumping;
+                            player.isAttacking = data.isAttacking;
+                            player.animationFrame = data.animationFrame;
+                        }
+                    }
+                    break;
+                    
+                case 'chat':
+                    // Message de chat
+                    if (data.username && data.message) {
+                        console.log(`💬 ${data.username}: ${data.message}`);
+                        this.showChatMessage(data.username, data.message);
+                    }
+                    break;
+                    
+                case 'player_level_change':
+                    // Un joueur a changé de niveau
+                    if (data.playerId && data.level) {
+                        const changingPlayer = this.connectedPlayers.get(data.playerId);
+                        if (changingPlayer) {
+                            changingPlayer.level = data.level;
+                        }
+                    }
+                    break;
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors du traitement du message:', error, data);
         }
     }
     
@@ -191,7 +212,8 @@ class MultiplayerClient {
         
         // Envoyer la position toutes les 50ms (20 fois par seconde)
         this.updateInterval = setInterval(() => {
-            if (gameEngine && gameEngine.player) {
+            // Vérification robuste de l'existence de gameEngine
+            if (typeof gameEngine !== 'undefined' && gameEngine && gameEngine.player) {
                 const player = gameEngine.player;
                 this.updatePosition(
                     player.x,

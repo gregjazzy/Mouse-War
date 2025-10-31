@@ -138,7 +138,10 @@ window.showModeSwitcher = function() {
 
 // Fermer le sélecteur de mode
 window.closeModeSwitcher = function() {
-    document.getElementById('modeSwitcher').style.display = 'none';
+    const modeSwitcher = document.getElementById('modeSwitcher');
+    if (modeSwitcher) {
+        modeSwitcher.style.display = 'none';
+    }
     if (gameEngine) {
         gameEngine.isPaused = false;
     }
@@ -758,14 +761,26 @@ function loadAudioFiles() {
     // Son de collecte de fromage (limité à 1.5 seconde)
     soundEffects.collect = new Audio('sound/miam.wav');
     soundEffects.collect.volume = soundEffectsVolume;
+    soundEffects.collect.onerror = () => {
+        console.warn('⚠️ Impossible de charger sound/miam.wav');
+        soundEffects.collect = null;
+    };
     
     // Son de victoire
     soundEffects.victory = new Audio('sound/yes.wav');
     soundEffects.victory.volume = soundEffectsVolume;
+    soundEffects.victory.onerror = () => {
+        console.warn('⚠️ Impossible de charger sound/yes.wav');
+        soundEffects.victory = null;
+    };
     
     // Son de mort/dégâts (quand le joueur se fait toucher)
     soundEffects.death = new Audio('sound/aie.wav');
     soundEffects.death.volume = soundEffectsVolume;
+    soundEffects.death.onerror = () => {
+        console.warn('⚠️ Impossible de charger sound/aie.wav');
+        soundEffects.death = null;
+    };
     
 }
 
@@ -1121,33 +1136,36 @@ window.registerUser = function() {
     const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
     const errorEl = document.getElementById('registerError');
     
+    // Protection XSS : Nettoyer le nom d'utilisateur
+    const sanitizedUsername = username.replace(/[<>'"&]/g, '');
+    
     // Validation
-    if (!username || !password) {
+    if (!sanitizedUsername || !password) {
         errorEl.textContent = '❌ Veuillez remplir tous les champs';
         return;
     }
     
     // Validation du nom d'utilisateur
-    if (username.length < 3) {
+    if (sanitizedUsername.length < 3) {
         errorEl.textContent = '❌ Le nom doit contenir au moins 3 caractères';
         return;
     }
     
-    if (username.length > 20) {
+    if (sanitizedUsername.length > 20) {
         errorEl.textContent = '❌ Le nom ne doit pas dépasser 20 caractères';
         return;
     }
     
     // Vérifier que le nom ne contient que des caractères alphanumériques, tirets et underscores
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
-    if (!usernameRegex.test(username)) {
+    if (!usernameRegex.test(sanitizedUsername)) {
         errorEl.textContent = '❌ Le nom ne peut contenir que des lettres, chiffres, - et _';
         return;
     }
     
     // Mots réservés et interdits
     const forbiddenWords = ['admin', 'root', 'system', 'moderator', 'mod', 'owner', 'administrator'];
-    if (forbiddenWords.some(word => username.toLowerCase().includes(word))) {
+    if (forbiddenWords.some(word => sanitizedUsername.toLowerCase().includes(word))) {
         errorEl.textContent = '❌ Ce nom est réservé ou interdit';
         return;
     }
@@ -1169,15 +1187,15 @@ window.registerUser = function() {
     }
     
     // Vérifier si le nom d'utilisateur existe déjà
-    if (accountsDatabase[username.toLowerCase()]) {
+    if (accountsDatabase[sanitizedUsername.toLowerCase()]) {
         errorEl.textContent = '❌ Ce nom d\'utilisateur est déjà pris';
         return;
     }
     
     // Créer le compte avec hash sécurisé
     const hashedPassword = hashPasswordSync(password);
-    accountsDatabase[username.toLowerCase()] = {
-        username: username,
+    accountsDatabase[sanitizedUsername.toLowerCase()] = {
+        username: sanitizedUsername,
         password: hashedPassword,
         avatar: availableAvatars[0], // Avatar par défaut
         createdAt: new Date().toISOString(),
@@ -1634,7 +1652,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Initialiser les effets sonores
     initSoundEffects();
-    
+
     // Démarrer la musique après la première interaction utilisateur
     let musicStarted = false;
     const startMusic = () => {
@@ -1648,12 +1666,28 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', startMusic, { once: true });
     document.addEventListener('keydown', startMusic, { once: true });
     
+    // Stocker les références des event listeners pour pouvoir les nettoyer
+    const buttonClickHandlers = new WeakMap();
+    
     // Ajouter des sons de clic sur tous les boutons
     document.querySelectorAll('.btn, button').forEach(btn => {
-        btn.addEventListener('click', () => {
+        const clickHandler = () => {
             playSound('click');
-        });
+        };
+        buttonClickHandlers.set(btn, clickHandler);
+        btn.addEventListener('click', clickHandler);
     });
+    
+    // Fonction de nettoyage globale (à appeler avant de quitter l'application)
+    window.cleanupEventListeners = function() {
+        document.querySelectorAll('.btn, button').forEach(btn => {
+            const handler = buttonClickHandlers.get(btn);
+            if (handler) {
+                btn.removeEventListener('click', handler);
+            }
+        });
+        console.log('✅ Event listeners nettoyés');
+    };
 });
 
 // ============ SYSTÈME D'OBJETS QUI TOMBENT ============
@@ -2771,8 +2805,15 @@ function displaySearchResults(results) {
 
 // Fermer les résultats de recherche
 function closeSearchResults() {
-    document.getElementById('searchResultsOverlay').style.display = 'none';
-    document.getElementById('friendSearchInput').value = '';
+    const overlay = document.getElementById('searchResultsOverlay');
+    const searchInput = document.getElementById('friendSearchInput');
+    
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+    if (searchInput) {
+        searchInput.value = '';
+    }
 }
 
 // Envoyer une demande d'ami

@@ -211,3 +211,47 @@ setInterval(() => {
     });
 }, 60000);
 
+// Fermeture gracieuse du serveur
+function gracefulShutdown(signal) {
+    console.log(`\n⚠️  Signal ${signal} reçu, fermeture du serveur...`);
+    
+    // Fermer toutes les connexions WebSocket
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.close(1000, 'Serveur en cours d\'arrêt');
+        }
+    });
+    
+    // Fermer le serveur WebSocket
+    wss.close(() => {
+        console.log('✅ Serveur WebSocket fermé');
+        
+        // Fermer le serveur HTTP
+        server.close(() => {
+            console.log('✅ Serveur HTTP fermé');
+            console.log('👋 Au revoir !');
+            process.exit(0);
+        });
+    });
+    
+    // Forcer la fermeture après 10 secondes si ça prend trop de temps
+    setTimeout(() => {
+        console.error('❌ Timeout: fermeture forcée');
+        process.exit(1);
+    }, 10000);
+}
+
+// Écouter les signaux de fermeture
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Gérer les erreurs non catchées
+process.on('uncaughtException', (error) => {
+    console.error('❌ Erreur non catchée:', error);
+    gracefulShutdown('uncaughtException');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Promise rejetée non gérée:', promise, 'raison:', reason);
+});
+

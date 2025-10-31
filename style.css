@@ -4328,6 +4328,41 @@ body::before {
         font-size: 14px; /* Augmenté de 10px à 14px */
     }
     
+    /* 🚀 OPTIMISATIONS PERFORMANCE MOBILE */
+    /* Désactiver les effets visuels lourds sur mobile */
+    body::before,
+    #startScreen::before,
+    #startScreen::after,
+    .btn::after {
+        display: none !important;
+    }
+    
+    /* Simplifier les box-shadow sur mobile */
+    .btn {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+        transform-style: flat !important;
+    }
+    
+    .btn:hover {
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4) !important;
+    }
+    
+    .btn-primary {
+        box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3) !important;
+    }
+    
+    .btn-primary:hover {
+        box-shadow: 0 6px 15px rgba(255, 107, 107, 0.4) !important;
+    }
+    
+    /* Désactiver les animations complexes */
+    @keyframes sparkle,
+    @keyframes bubbleFloat,
+    @keyframes twinkle {
+        from, to { opacity: 0; }
+    }
+    
     /* ✅ ÉCRAN DE CONNEXION MOBILE */
     #loginScreen {
         padding: 1rem;
@@ -4727,41 +4762,43 @@ body::before {
     
     /* Contrôles tactiles - TAILLE CORRECTE pour être facilement touchables */
     .joystick-base {
-        width: 110px; /* Augmenté de 90px à 110px */
-        height: 110px;
+        width: 130px !important; /* Augmenté pour être plus facile à utiliser */
+        height: 130px !important;
     }
     
     .joystick-stick {
-        width: 50px; /* Augmenté de 40px à 50px */
-        height: 50px;
+        width: 60px !important; /* Augmenté pour être plus visible */
+        height: 60px !important;
     }
     
     .virtual-joystick {
-        bottom: 15px; /* Augmenté de 10px à 15px */
-        left: 15px;
+        bottom: 20px !important;
+        left: 20px !important;
     }
     
     .action-buttons {
-        bottom: 15px; /* Augmenté de 10px à 15px */
-        right: 15px;
-        gap: 10px; /* Augmenté de 8px à 10px */
+        bottom: 20px !important;
+        right: 20px !important;
+        gap: 15px !important;
     }
     
-    .btn-jump, .btn-attack {
-        width: 75px; /* Augmenté de 65px à 75px */
-        height: 75px;
+    .btn-jump,
+    .btn-attack {
+        width: 85px !important; /* Augmenté de 75px à 85px */
+        height: 85px !important;
+        font-size: 2rem !important;
     }
     
     .btn-jump .btn-icon, .btn-attack .btn-icon {
-        font-size: 1.5rem; /* Augmenté de 1.3rem à 1.5rem */
+        font-size: 2rem !important;
     }
     
     .btn-jump .btn-label, .btn-attack .btn-label {
-        font-size: 0.6rem; /* Augmenté de 0.5rem à 0.6rem */
+        font-size: 0.7rem !important;
     }
     
     .joystick-label {
-        font-size: 0.7rem; /* Augmenté de 0.6rem à 0.7rem */
+        font-size: 0.8rem !important;
     }
     
     /* HUD très compact */

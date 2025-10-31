@@ -134,30 +134,39 @@ class GameEngine {
         const isMobile = windowWidth <= 768;
         
         if (isMobile) {
-            // Sur mobile : adapter au viewport - PLEIN ÉCRAN
+            // Sur mobile : PLEIN ÉCRAN BRUTAL
             const isLandscape = windowWidth > windowHeight;
             
             if (isLandscape) {
                 // Mode paysage : PLEIN ÉCRAN moins HUD
                 this.width = windowWidth;
-                this.height = windowHeight - 100; // Espace pour le HUD en haut
+                this.height = windowHeight - 100;
             } else {
                 // Mode portrait : PLEIN ÉCRAN moins contrôles
                 this.width = windowWidth;
-                this.height = windowHeight - 250; // Espace pour HUD + contrôles en bas
+                this.height = windowHeight - 250;
             }
             
-            // Appliquer les dimensions au canvas
+            // 🔥 FORCER LES DIMENSIONS EN CONTOURNANT TOUT LE CSS
             this.canvas.width = this.width;
             this.canvas.height = this.height;
             
-            // CSS pour forcer les dimensions (PAS de auto sur mobile !)
-            this.canvas.style.width = this.width + 'px';
-            this.canvas.style.height = this.height + 'px';
-            this.canvas.style.maxWidth = 'none';
-            this.canvas.style.maxHeight = 'none';
+            // Forcer via setAttribute (contourne le CSS)
+            this.canvas.setAttribute('width', this.width);
+            this.canvas.setAttribute('height', this.height);
             
-            console.log('📱 Canvas mobile:', this.width, 'x', this.height);
+            // Forcer via style inline (priorité absolue sur CSS)
+            this.canvas.style.cssText = `
+                width: ${this.width}px !important;
+                height: ${this.height}px !important;
+                max-width: none !important;
+                max-height: none !important;
+                min-width: ${this.width}px !important;
+                min-height: ${this.height}px !important;
+                display: block !important;
+            `;
+            
+            console.log('🔥 MOBILE - Canvas FORCÉ:', this.width, 'x', this.height);
         } else {
             // Sur desktop/tablette : taille normale
             this.width = Math.min(windowWidth - 40, 1280);
